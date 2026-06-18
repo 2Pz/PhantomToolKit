@@ -1,0 +1,48 @@
+<div class="mb-2">
+      <h2 class="text-2xl fantasy-font text-[#bfa571] uppercase tracking-widest" id="status-text">Connecting...</h2>
+      <div class="status-header-line w-full"></div>
+    </div>
+
+    <section>
+      <h2 class="text-gray-200 font-bold mb-4">Current Players</h2>
+      <div class="border border-[#333] bg-[#1e1e1e] overflow-x-auto custom-scrollbar">
+        <table class="session-table min-w-[600px]">
+          <thead>
+            <tr>
+              <th class="w-1/3">Username</th>
+              <th class="w-1/3">Level</th>
+              <th class="w-1/3">HP</th>
+            </tr>
+          </thead>
+          <tbody id="current-players-body">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-gray-200 font-bold mb-4">Recent Players</h2>
+      <div class="border border-[#333] bg-[#1e1e1e] overflow-x-auto custom-scrollbar">
+        <table class="session-table min-w-[600px]">
+          <thead>
+            <tr>
+              <th class="w-1/3">Username</th>
+              <th class="w-1/3">Level</th>
+              <th class="w-1/3">Last Seen</th>
+            </tr>
+          </thead>
+          <tbody id="recent-players-body">
+            <tr><td colspan="3" class="text-center text-gray-500 py-4">No recent players tracked yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-4 gap-4">
+      <button class="px-6 py-3 rounded-md inter-font uppercase tracking-wider text-[11px] font-black transition-all border flex items-center justify-center shadow-md active:scale-95 bg-white/5 text-gray-200 border-white/20 hover:border-[#bfa571]/50 hover:text-white hover:bg-white/10" onclick="postAction('fix_infinite_loading')">Fix Infinite Loading</button>
+      <button class="px-6 py-3 rounded-md inter-font uppercase tracking-wider text-[11px] font-black transition-all border flex items-center justify-center shadow-md active:scale-95 bg-white/5 text-gray-200 border-white/20 hover:border-[#bfa571]/50 hover:text-white hover:bg-white/10" onclick="postAction('quit_to_menu')">Quit To Main Menu</button>
+      <button class="px-6 py-3 rounded-md inter-font uppercase tracking-wider text-[11px] font-black transition-all border flex items-center justify-center shadow-md active:scale-95 bg-white/5 text-gray-200 border-white/20 hover:border-[#bfa571]/50 hover:text-white hover:bg-white/10" onclick="postAction('fog_wall')">Fog Wall Anim</button>
+      <button class="px-6 py-3 rounded-md inter-font uppercase tracking-wider text-[11px] font-black transition-all border flex items-center justify-center shadow-md active:scale-95 bg-[#bfa571] text-black border-[#bfa571] hover:brightness-110 shadow-[0_0_15px_rgba(191,165,113,0.2)]" onclick="postAction('heal')">Restore Local Stats</button>
+    </div>
+

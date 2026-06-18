@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phantom Toolkit Mod</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="textured-bg">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-btn active" onclick="switchTab('main', this)">
+      <span>Main</span>
+    </div>
+    <div class="sidebar-btn" onclick="switchTab('build', this)">
+      <span>Build</span>
+    </div>
+    <div class="sidebar-btn" onclick="switchTab('cheats', this)">
+      <span>Cheats</span>
+    </div>
+    <div class="sidebar-btn" onclick="switchTab('backup', this)">
+      <span>Backup</span>
+    </div>
+    <div class="sidebar-btn" onclick="switchTab('inventory', this)">
+      <span>Inventory</span>
+    </div>
+  </div>
+
+  <!-- Content Area -->
+  <div class="flex-1 flex flex-col p-6 inter-font gap-8 overflow-y-auto custom-scrollbar" id="main-tab">
+    {% include "views/main.html" %}
+  </div>
+
+  <div class="flex-1 hidden inter-font overflow-hidden" id="build-tab">
+    {% include "views/build.html" %}
+  </div>
+
+  <div id="cheats-tab" class="hidden flex-1 flex flex-col p-8 space-y-8 fade-in">
+    {% include "views/cheats.html" %}
+  </div>
+
+  <div id="backup-tab" class="hidden flex-1 flex flex-col p-8 space-y-8 fade-in min-h-0 overflow-hidden">
+    {% include "views/backup.html" %}
+  </div>
+
+  <div id="inventory-tab" class="hidden flex-1 flex flex-col p-8 space-y-8 fade-in">
+    {% include "views/inventory.html" %}
+  </div>
+
+
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/tabs/main_tab.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/tabs/build_tab.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/tabs/cheats_tab.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/tabs/backup_tab.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/tabs/inventory_tab.js') }}"></script>
+</body>
+</html>

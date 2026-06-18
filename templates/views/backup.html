@@ -1,0 +1,204 @@
+<div class="flex justify-between items-center mb-6 px-2">
+  <div class="flex items-center gap-4">
+    <div class="flex flex-col">
+      <h2 class="text-xl fantasy-font text-gray-100 tracking-[0.2em] uppercase">Backup Archives</h2>
+      <div class="status-header-line w-24 mb-0 opacity-50"></div>
+    </div>
+    
+    <div id="auto-backup-indicator" class="flex items-center gap-2 px-3 py-1 rounded-full border bg-red-500/10 border-red-500/30">
+      <div id="auto-backup-dot" class="w-2 h-2 rounded-full bg-red-500"></div>
+      <span id="auto-backup-text" class="text-[10px] fantasy-font tracking-widest uppercase font-bold text-red-400">
+        Auto-Backup Inactive
+      </span>
+    </div>
+  </div>
+  
+  <div id="backup-status-msg" class="hidden text-[10px] fantasy-font tracking-widest text-[#bfa571] animate-pulse bg-white/5 px-4 py-1 border border-[#bfa571]/20 rounded-sm italic">
+  </div>
+</div>
+
+<div class="flex-1 flex gap-8 overflow-hidden min-h-0">
+  <!-- Left Pane: Visual Archive Gallery -->
+  <div class="w-[350px] flex flex-col min-h-0 relative">
+    <div class="mb-4 flex gap-2">
+       <button id="backup-settings-btn" class="flex-1 py-2 text-[10px] fantasy-font tracking-[0.2em] uppercase border transition-all bg-black/40 text-gray-500 border-white/5 hover:border-white/20 hover:text-gray-300">
+         Settings
+       </button>
+       <button id="backup-refresh-btn" class="px-4 py-2 text-[10px] fantasy-font border border-white/5 text-gray-500 hover:text-white hover:bg-white/5 transition-all">
+         ↻
+       </button>
+    </div>
+
+    <!-- Pinned section -->
+    <div id="pinned-backups-container" class="shrink-0 mb-6 hidden">
+      <h3 class="text-[11px] fantasy-font text-[#bfa571] tracking-[0.3em] uppercase mb-4 px-1 flex items-center gap-3">
+        <span class="font-bold">Pinned Favorites</span>
+        <div class="flex-1 h-px bg-[#bfa571]/20"></div>
+      </h3>
+      <div id="pinned-backups-list" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+      </div>
+    </div>
+
+    <!-- Recent Archives section -->
+    <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
+      <h3 class="text-[11px] fantasy-font text-gray-500 tracking-[0.3em] uppercase mb-4 px-1 flex items-center gap-3 shrink-0">
+        <span class="opacity-50 font-bold">Recent Archives</span>
+        <div class="flex-1 h-px bg-white/5"></div>
+      </h3>
+      
+      <div id="regular-backups-list" class="flex-1 overflow-y-auto custom-scrollbar pr-3 space-y-3 pb-4">
+        <div class="p-10 text-center border border-dashed border-white/5 rounded-lg">
+          <p class="text-gray-600 text-sm italic">No archives found.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 flex flex-col gap-2">
+      <button id="create-backup-btn" class="w-full bg-[#bfa571] text-black font-bold uppercase tracking-widest py-3 text-xs border border-[#bfa571] hover:brightness-110 transition-all shadow-[0_0_15px_rgba(191,165,113,0.3)] hover:shadow-[0_0_25px_rgba(191,165,113,0.5)]">
+         Create New Backup
+      </button>
+      <button id="toggle-auto-backup-btn" class="w-full border border-white/10 text-gray-300 bg-white/5 uppercase tracking-widest py-3 text-xs hover:bg-white/10 hover:border-white/20 transition-all">
+         Start Auto
+      </button>
+    </div>
+  </div>
+
+  <!-- Right Pane: Selected Backup Details / Settings Overlay -->
+  <div class="flex-1 flex flex-col min-h-0 gap-2 relative">
+    
+    <!-- Settings Overlay Layer -->
+    <div id="backup-settings-panel" class="hidden absolute inset-0 z-20 bg-black/90 backdrop-blur-md border border-white/10 p-8 overflow-y-auto custom-scrollbar flex-col gap-8">
+      <div class="flex justify-between items-center border-b border-[#bfa571]/30 pb-4 shrink-0">
+        <h3 class="text-xl fantasy-font text-[#bfa571] tracking-[0.2em] uppercase">Configuration</h3>
+        <button id="close-settings-btn" class="text-gray-500 hover:text-white transition-colors">✕</button>
+      </div>
+
+      <!-- Path Settings -->
+      <div class="space-y-4 shrink-0">
+        <h4 class="text-xs fantasy-font text-gray-500 tracking-[0.2em] uppercase mb-4 border-l-2 border-[#bfa571] pl-3">Directories</h4>
+        <div class="grid gap-4">
+          <div>
+            <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold">Save File Location</label>
+            <div class="flex gap-2">
+              <input type="text" id="setting-save-dir" class="flex-1 bg-black/40 border border-white/10 rounded-sm px-4 py-2 text-sm text-gray-200 focus:border-[#bfa571]/50 outline-none transition-all" placeholder="Path to game saves..." />
+              <button id="setting-auto-find" class="px-4 bg-white/5 border border-white/10 text-[10px] fantasy-font hover:text-[#bfa571] hover:border-[#bfa571]/30 transition-all uppercase tracking-widest">Find</button>
+              <button id="setting-browse-save" class="px-4 bg-white/5 border border-white/10 text-[10px] fantasy-font hover:text-[#bfa571] hover:border-[#bfa571]/30 transition-all uppercase tracking-widest">Browse</button>
+            </div>
+            <div id="auto-find-results" class="hidden mt-2 border border-white/10 bg-black/60 rounded-sm overflow-hidden divide-y divide-white/5"></div>
+          </div>
+          <div>
+            <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold">Backup Archive Path</label>
+            <div class="flex gap-2">
+              <input type="text" id="setting-backup-dir" class="flex-1 bg-black/40 border border-white/10 rounded-sm px-4 py-2 text-sm text-gray-200 focus:border-[#bfa571]/50 outline-none transition-all" placeholder="Path to backup storage..." />
+              <button id="setting-browse-backup" class="px-4 bg-white/5 border border-white/10 text-[10px] fantasy-font hover:text-[#bfa571] hover:border-[#bfa571]/30 transition-all uppercase tracking-widest">Browse</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Behavior Settings -->
+      <div class="grid grid-cols-2 gap-8 shrink-0">
+         <div class="space-y-4">
+            <h4 class="text-xs fantasy-font text-gray-500 tracking-[0.2em] uppercase mb-4 border-l-2 border-[#bfa571] pl-3">Archive Behavior</h4>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold">Active Save File</label>
+                <select id="setting-save-file" class="w-full bg-black/40 border border-white/10 rounded-sm px-3 py-2 text-sm text-gray-300 outline-none focus:border-[#bfa571]/50">
+                </select>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold">Method</label>
+                  <select id="setting-method" class="w-full bg-black/40 border border-white/10 rounded-sm px-3 py-2 text-sm text-gray-300 outline-none focus:border-[#bfa571]/50">
+                    <option value="0">Interval</option>
+                    <option value="1">Watcher</option>
+                  </select>
+                </div>
+                <div>
+                   <label id="setting-method-label" class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold">Mins</label>
+                   <input type="number" id="setting-interval" class="w-full bg-black/40 border border-white/10 rounded-sm px-3 py-2 text-sm text-gray-300" />
+                </div>
+              </div>
+
+              <!-- Max Backups Slider -->
+              <div>
+                <div class="flex justify-between mb-2">
+                  <label class="block text-[10px] text-gray-500 uppercase tracking-widest fantasy-font font-bold">Max Saves</label>
+                  <span id="setting-max-backups-val" class="text-xs text-[#bfa571] font-bold">20</span>
+                </div>
+                <input type="range" id="setting-max-backups" min="5" max="100" step="5" class="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#bfa571]" />
+              </div>
+
+              <!-- Notification Volume Slider -->
+              <div>
+                <div class="flex justify-between mb-2">
+                  <label class="block text-[10px] text-gray-500 uppercase tracking-widest fantasy-font font-bold">Notification Volume</label>
+                  <span id="setting-volume-val" class="text-xs text-[#bfa571] font-bold">50%</span>
+                </div>
+                <input type="range" id="setting-volume" min="0" max="100" class="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#bfa571]" />
+              </div>
+
+              <div class="flex items-center gap-3 p-3 bg-white/5 border border-white/5 rounded-sm">
+                <input type="checkbox" id="setting-safeload" class="w-4 h-4 bg-black border-white/20 text-[#bfa571] rounded focus:ring-0" />
+                <label for="setting-safeload" class="text-xs fantasy-font tracking-widest text-gray-300 cursor-pointer uppercase">
+                  Safe Load (Return to Menu)
+                </label>
+              </div>
+            </div>
+         </div>
+
+         <div class="space-y-4">
+            <h4 class="text-xs fantasy-font text-gray-500 tracking-[0.2em] uppercase mb-4 border-l-2 border-[#bfa571] pl-3">Global Hotkeys</h4>
+            <div id="keybind-container" class="grid grid-cols-1 gap-4">
+            </div>
+         </div>
+      </div>
+
+      <div class="mt-auto pt-8 border-t border-white/10 flex justify-end shrink-0">
+        <button id="save-settings-btn" class="px-10 py-3 fantasy-font tracking-[0.2em] uppercase text-xs font-bold transition-all border bg-[#bfa571] text-black border-[#bfa571] hover:brightness-110">
+          Commit Changes
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Detail View -->
+    <div id="selected-backup-details" class="hidden flex-1 flex flex-col min-h-0 gap-2">
+      <!-- Screenshot Frame - Maximized to fill space -->
+      <div class="relative group rounded-lg overflow-hidden border border-[#bfa571]/20 shadow-2xl bg-black/50 flex-1 min-h-0">
+        <div id="selected-backup-img-fallback" class="absolute inset-0 flex flex-col items-center justify-center opacity-20">
+          <span class="text-6xl mb-4">🖼️</span>
+          <span class="fantasy-font tracking-[0.4em] uppercase text-sm">No Preview Captured</span>
+        </div>
+        <img id="selected-backup-img" src="" class="hidden w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <div class="absolute bottom-6 left-6 opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0 flex flex-col items-start gap-1 z-10">
+           <h3 id="selected-backup-name" class="text-2xl fantasy-font text-[#bfa571] tracking-widest uppercase mb-1 drop-shadow-lg">
+           </h3>
+           <p id="selected-backup-date" class="text-sm text-gray-300 tracking-[0.1em] uppercase">
+           </p>
+           <p id="selected-backup-source" class="text-[10px] text-[#bfa571]/70 tracking-[0.1em] uppercase mt-1">
+           </p>
+        </div>
+      </div>
+
+      <!-- Action Grid - Pushed to bottom with minimal gap -->
+      <div class="mt-4 shrink-0">
+        <div class="grid grid-cols-2 gap-3">
+          <button id="btn-restore" class="w-full bg-white/5 text-white font-bold uppercase tracking-widest py-3 text-xs border border-white/10 hover:border-white/30 hover:bg-white/10 transition-all">Restore Selected</button>
+          <button id="btn-rename" class="w-full border border-white/10 text-gray-300 bg-white/5 uppercase tracking-widest py-3 text-xs hover:bg-white/10 hover:border-white/20 transition-all">Rename</button>
+          <button id="btn-pin" class="w-full border border-white/10 text-gray-300 bg-white/5 uppercase tracking-widest py-3 text-xs hover:bg-white/10 hover:border-white/20 transition-all">Toggle Pin</button>
+          <button id="btn-delete" class="w-full bg-red-500/10 text-red-500 border border-red-500/20 uppercase tracking-widest py-3 text-xs hover:bg-red-500/20 hover:border-red-500/50 transition-all">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Selection View -->
+    <div id="no-selection-view" class="flex-1 flex flex-col items-center justify-center opacity-30 border border-dashed border-white/10 rounded-lg bg-black/20">
+       <div class="w-16 h-16 border-2 border-[#bfa571]/30 rounded-full flex items-center justify-center mb-6">
+         <div class="w-8 h-8 bg-[#bfa571]/20 rotate-45"></div>
+       </div>
+       <h3 class="fantasy-font text-xl tracking-[0.3em] uppercase mb-2">Awaiting Selection</h3>
+       <p class="text-xs tracking-widest uppercase">Select an archive from the left to manage</p>
+    </div>
+  </div>
+</div>
