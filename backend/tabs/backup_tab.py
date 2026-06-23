@@ -191,65 +191,24 @@ def _update_pinned_and_return(backup_dir, pinned):
 
 def capture_screenshot_mss():
     try:
-        import ctypes
-        import glob
-        import os
-        import time
-
-        try:
-            # Connect to the already loaded Steam API in Elden Ring
-            steam_api = ctypes.WinDLL("steam_api64.dll")
-
-            SteamAPI_SteamScreenshots_v003 = steam_api.SteamAPI_SteamScreenshots_v003
-            SteamAPI_SteamScreenshots_v003.restype = ctypes.c_void_p
-            ptr = SteamAPI_SteamScreenshots_v003()
-
-            if ptr:
-                SteamAPI_ISteamScreenshots_TriggerScreenshot = steam_api.SteamAPI_ISteamScreenshots_TriggerScreenshot
-                SteamAPI_ISteamScreenshots_TriggerScreenshot.argtypes = [ctypes.c_void_p]
-                SteamAPI_ISteamScreenshots_TriggerScreenshot.restype = None
-                SteamAPI_ISteamScreenshots_TriggerScreenshot(ptr)
-
-                # Wait for Steam to save the JPEG asynchronously
-                time.sleep(1.0)
-
-                paths = [
-                    "Z:/home/*/.local/share/Steam/userdata/*/760/remote/*/screenshots/*.jpg",
-                    "Z:/home/*/.steam/steam/userdata/*/760/remote/*/screenshots/*.jpg",
-                    "Z:/home/*/.steam/root/userdata/*/760/remote/*/screenshots/*.jpg",
-                ]
-
-                found = []
-                for p in paths:
-                    found.extend(glob.glob(p))
-
-                if found:
-                    newest = max(found, key=os.path.getmtime)
-                    if time.time() - os.path.getmtime(newest) < 15:
-                        with open(newest, "rb") as img_file:
-                            data = img_file.read()
-
-                        # Delete the screenshot and its thumbnail to keep Steam clean
-                        try:
-                            os.remove(newest)
-                            import os.path
-
-                            thumb = os.path.join(os.path.dirname(newest), "thumbnails", os.path.basename(newest))
-                            if os.path.exists(thumb):
-                                os.remove(thumb)
-                        except Exception as e:
-                            print("Cleanup error:", e)
-
-                        return data, "screenshot.jpg"
-        except Exception as e:
-            print("Steamworks API error:", e)
-
-        # Fallback to mss
         import mss
 
         with mss.mss() as sct:
             sct_img = sct.grab(sct.monitors[1])
-            return mss.tools.to_png(sct_img.rgb, sct_img.size), "screenshot.png"
+
+            try:
+                import io
+
+                from PIL import Image
+
+                pil_img = Image.frombytes("RGB", sct_img.size, sct_img.rgb)
+                pil_img = pil_img.resize((320, 180), Image.LANCZOS)
+
+                img_byte_arr = io.BytesIO()
+                pil_img.save(img_byte_arr, format="PNG")
+                return img_byte_arr.getvalue(), "screenshot.png"
+            except ImportError:
+                return mss.tools.to_png(sct_img.rgb, sct_img.size), "screenshot.png"
     except Exception as e:
         print("Screenshot error:", e)
         return None, None

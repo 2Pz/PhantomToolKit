@@ -19,10 +19,12 @@ def main():
     shutil.copytree("notifications", dist_dir)
     print("Done! Notifications copied.")
 
-    print("Creating empty items folder in dist...")
+    print("Copying items folder to dist/items...")
     items_dir = os.path.join("dist", "items")
-    os.makedirs(items_dir, exist_ok=True)
-    print("Done! Empty items folder created.")
+    if os.path.exists(items_dir):
+        shutil.rmtree(items_dir)
+    shutil.copytree("items", items_dir)
+    print("Done! Items copied.")
 
 
 if __name__ == "__main__":
