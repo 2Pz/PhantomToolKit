@@ -447,32 +447,112 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    btnBrowseSave.onclick = async () => {
+    
+    // --- Custom Web File Picker Logic ---
+    const modal = document.getElementById('file-picker-modal');
+    const modalClose = document.getElementById('file-picker-close');
+    const modalCancel = document.getElementById('file-picker-cancel');
+    const modalSelect = document.getElementById('file-picker-select');
+    const modalUp = document.getElementById('file-picker-up');
+    const modalPath = document.getElementById('file-picker-path');
+    const modalGrid = document.getElementById('file-picker-grid');
+    const modalDrives = document.getElementById('file-picker-drives');
+    const modalStatus = document.getElementById('file-picker-status');
+    const modalLoading = document.getElementById('file-picker-loading');
+
+    let currentPickerTarget = null;
+    let currentPath = "";
+
+    async function loadDirectory(path) {
+        modalLoading.classList.remove('hidden');
+        modalStatus.textContent = "Loading...";
         try {
-            const data = await apiCall('/api/backup/browse', {
+            const data = await apiCall('/api/backup/api/fs/list', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ initial: setSaveDir.value })
+                body: JSON.stringify({ path: path })
             });
-            if (data.path) {
-                setSaveDir.value = data.path;
+
+            if (data.error) {
+                modalStatus.textContent = "Error: " + data.error;
+            } else {
+                currentPath = data.current;
+                modalPath.value = currentPath || "This PC";
+                modalStatus.textContent = `${data.folders.length} items`;
+                
+                // Render Drives if we are at root
+                if (!currentPath && data.drives) {
+                    modalDrives.innerHTML = '<h4 class="text-[10px] fantasy-font text-gray-500 tracking-widest uppercase mb-2">Drives</h4>';
+                    data.drives.forEach(drive => {
+                        const dBtn = document.createElement('button');
+                        dBtn.className = "text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/10 hover:text-white rounded-sm flex items-center gap-2";
+                        dBtn.innerHTML = `<span>🖴</span> <span>${drive}</span>`;
+                        dBtn.onclick = () => loadDirectory(drive);
+                        modalDrives.appendChild(dBtn);
+                    });
+                }
+
+                // Render Folders
+                modalGrid.innerHTML = "";
+                if (!currentPath && data.drives) {
+                     data.drives.forEach(drive => {
+                        const fDiv = document.createElement('div');
+                        fDiv.className = "flex flex-col items-center justify-center p-4 bg-white/5 border border-white/5 rounded-md hover:bg-white/10 hover:border-[#bfa571]/50 cursor-pointer transition-all text-center gap-2 group";
+                        fDiv.innerHTML = `<span class="text-3xl group-hover:scale-110 transition-transform">🖴</span><span class="text-xs text-gray-300 truncate w-full" title="${drive}">${drive}</span>`;
+                        fDiv.onclick = () => loadDirectory(drive);
+                        modalGrid.appendChild(fDiv);
+                    });
+                } else {
+                    data.folders.forEach(folder => {
+                        const fDiv = document.createElement('div');
+                        fDiv.className = "flex flex-col items-center justify-center p-4 bg-white/5 border border-white/5 rounded-md hover:bg-white/10 hover:border-[#bfa571]/50 cursor-pointer transition-all text-center gap-2 group";
+                        if (folder.hidden) fDiv.style.opacity = "0.5";
+                        fDiv.innerHTML = `<span class="text-4xl text-[#bfa571] group-hover:scale-110 transition-transform">📁</span><span class="text-xs text-gray-300 truncate w-full font-mono" title="${folder.name}">${folder.name}</span>`;
+                        fDiv.onclick = () => loadDirectory(folder.path);
+                        modalGrid.appendChild(fDiv);
+                    });
+                }
+
+                // Up Button
+                modalUp.onclick = () => {
+                    if (data.parent !== undefined) {
+                        loadDirectory(data.parent);
+                    }
+                };
+            }
+        } catch (e) {
+            modalStatus.textContent = "Failed to load directory.";
+        }
+        modalLoading.classList.add('hidden');
+    }
+
+    function openPicker(targetInput) {
+        currentPickerTarget = targetInput;
+        modal.classList.remove('hidden');
+        loadDirectory(targetInput.value || "");
+    }
+
+    function closePicker() {
+        modal.classList.add('hidden');
+        currentPickerTarget = null;
+    }
+
+    modalClose.onclick = closePicker;
+    modalCancel.onclick = closePicker;
+
+    modalSelect.onclick = async () => {
+        if (currentPickerTarget && currentPath) {
+            currentPickerTarget.value = currentPath;
+            if (currentPickerTarget === setSaveDir) {
                 await fetchSaveFiles(setSaveDir.value, '*');
             }
-        } catch (e) { }
+        }
+        closePicker();
     };
 
-    btnBrowseBackup.onclick = async () => {
-        try {
-            const data = await apiCall('/api/backup/browse', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ initial: setBackupDir.value })
-            });
-            if (data.path) {
-                setBackupDir.value = data.path;
-            }
-        } catch (e) { }
-    };
+    btnBrowseSave.onclick = () => openPicker(setSaveDir);
+    btnBrowseBackup.onclick = () => openPicker(setBackupDir);
+
 
     setMethod.onchange = () => {
         setMethodLabel.textContent = setMethod.value == 0 ? 'Mins' : 'Sleep';

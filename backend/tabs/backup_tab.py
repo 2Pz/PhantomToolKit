@@ -192,91 +192,67 @@ def _update_pinned_and_return(backup_dir, pinned):
 def capture_screenshot_mss():
     try:
         import ctypes
+        import glob
+        import os
+        import time
 
-        user32 = ctypes.windll.user32
+        try:
+            # Connect to the already loaded Steam API in Elden Ring
+            steam_api = ctypes.WinDLL("steam_api64.dll")
 
-        current_pid = __import__("os").getpid()
-        target_hwnd = None
-        titles = ["ELDEN RING™", "ELDEN RING"]
+            SteamAPI_SteamScreenshots_v003 = steam_api.SteamAPI_SteamScreenshots_v003
+            SteamAPI_SteamScreenshots_v003.restype = ctypes.c_void_p
+            ptr = SteamAPI_SteamScreenshots_v003()
 
-        def _check_window(hwnd: int) -> bool:
-            if user32.IsWindowVisible(hwnd):
-                length = user32.GetWindowTextLengthW(hwnd)
-                if length > 0:
-                    buf = ctypes.create_unicode_buffer(length + 1)
-                    user32.GetWindowTextW(hwnd, buf, length + 1)
-                    title = buf.value
-                    for t in titles:
-                        if t.lower() in title.lower():
-                            return True
-            return False
+            if ptr:
+                SteamAPI_ISteamScreenshots_TriggerScreenshot = steam_api.SteamAPI_ISteamScreenshots_TriggerScreenshot
+                SteamAPI_ISteamScreenshots_TriggerScreenshot.argtypes = [ctypes.c_void_p]
+                SteamAPI_ISteamScreenshots_TriggerScreenshot.restype = None
+                SteamAPI_ISteamScreenshots_TriggerScreenshot(ptr)
 
-        def _enum_callback(hwnd: int, _: int) -> bool:
-            nonlocal target_hwnd
-            pid = ctypes.c_ulong()
-            user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
-            if pid.value == current_pid and _check_window(hwnd):
-                target_hwnd = hwnd
-                return False
-            return True
+                # Wait for Steam to save the JPEG asynchronously
+                time.sleep(1.0)
 
-        WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
-        enum_func = WNDENUMPROC(_enum_callback)
-        user32.EnumWindows(enum_func, 0)
+                paths = [
+                    "Z:/home/*/.local/share/Steam/userdata/*/760/remote/*/screenshots/*.jpg",
+                    "Z:/home/*/.steam/steam/userdata/*/760/remote/*/screenshots/*.jpg",
+                    "Z:/home/*/.steam/root/userdata/*/760/remote/*/screenshots/*.jpg",
+                ]
 
-        if target_hwnd is None:
+                found = []
+                for p in paths:
+                    found.extend(glob.glob(p))
 
-            def _enum_callback_fallback(hwnd: int, _: int) -> bool:
-                nonlocal target_hwnd
-                if _check_window(hwnd):
-                    target_hwnd = hwnd
-                    return False
-                return True
+                if found:
+                    newest = max(found, key=os.path.getmtime)
+                    if time.time() - os.path.getmtime(newest) < 15:
+                        with open(newest, "rb") as img_file:
+                            data = img_file.read()
 
-            enum_func2 = WNDENUMPROC(_enum_callback_fallback)
-            user32.EnumWindows(enum_func2, 0)
+                        # Delete the screenshot and its thumbnail to keep Steam clean
+                        try:
+                            os.remove(newest)
+                            import os.path
 
-        if target_hwnd is None:
-            return None
+                            thumb = os.path.join(os.path.dirname(newest), "thumbnails", os.path.basename(newest))
+                            if os.path.exists(thumb):
+                                os.remove(thumb)
+                        except Exception as e:
+                            print("Cleanup error:", e)
 
-        class RECT(ctypes.Structure):
-            _fields_ = [
-                ("left", ctypes.c_long),
-                ("top", ctypes.c_long),
-                ("right", ctypes.c_long),
-                ("bottom", ctypes.c_long),
-            ]
+                        return data, "screenshot.jpg"
+        except Exception as e:
+            print("Steamworks API error:", e)
 
-        rect = RECT()
-        user32.GetClientRect(target_hwnd, ctypes.byref(rect))
-        width = rect.right - rect.left
-        height = rect.bottom - rect.top
-
-        class POINT(ctypes.Structure):
-            _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
-
-        pt = POINT(0, 0)
-        user32.ClientToScreen(target_hwnd, ctypes.byref(pt))
-
-        if width <= 0 or height <= 0:
-            return None
-
-        monitor = {
-            "left": pt.x,
-            "top": pt.y,
-            "width": width,
-            "height": height,
-        }
-
+        # Fallback to mss
         import mss
 
         with mss.mss() as sct:
-            sct_img = sct.grab(monitor)
-            # mss provides to_png natively, no need for PIL
-            return mss.tools.to_png(sct_img.rgb, sct_img.size)
+            sct_img = sct.grab(sct.monitors[1])
+            return mss.tools.to_png(sct_img.rgb, sct_img.size), "screenshot.png"
     except Exception as e:
         print("Screenshot error:", e)
-        return None
+        return None, None
 
 
 @backup_bp.route("/screenshot/<name>", methods=["GET"])
@@ -285,12 +261,19 @@ def get_screenshot(name):
     backup_dir = settings.get("backup_directory") or os.path.join(get_base_dir(), "backups")
     path = os.path.join(backup_dir, name)
     if os.path.exists(path) and path.endswith(".zip"):
+        import contextlib
+        import io
+        import zipfile
+
         with contextlib.suppress(Exception), zipfile.ZipFile(path, "r") as zf:
-            if "screenshot.png" in zf.namelist():
-                data = zf.read("screenshot.png")
+            if "screenshot.jpg" in zf.namelist():
                 from flask import send_file
 
-                return send_file(io.BytesIO(data), mimetype="image/png")
+                return send_file(io.BytesIO(zf.read("screenshot.jpg")), mimetype="image/jpeg")
+            elif "screenshot.png" in zf.namelist():
+                from flask import send_file
+
+                return send_file(io.BytesIO(zf.read("screenshot.png")), mimetype="image/png")
     return "", 404
 
 
@@ -315,8 +298,8 @@ def list_backups():
             if f.endswith(".zip"):
                 with contextlib.suppress(Exception), zipfile.ZipFile(path, "r") as zf:
                     names = zf.namelist()
-                    has_screenshot = "screenshot.png" in names
-                    source_files = ", ".join(n for n in names if n != "screenshot.png")
+                    has_screenshot = "screenshot.png" in names or "screenshot.jpg" in names
+                    source_files = ", ".join(n for n in names if n != "screenshot.png" and n != "screenshot.jpg")
 
             entry = {
                 "name": f,
@@ -340,7 +323,6 @@ def play_notification(name):
     if volume == 0:
         return
 
-    import io
     import os
     import struct
     import sys
@@ -394,7 +376,7 @@ def do_create_backup():
     os.makedirs(backup_dir, exist_ok=True)
     _request_fspy_save(settings)
 
-    screenshot_bytes = capture_screenshot_mss()
+    screenshot_bytes, ext = capture_screenshot_mss()
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     backup_name = f"backup_{timestamp}.zip"
@@ -403,7 +385,7 @@ def do_create_backup():
     with zipfile.ZipFile(dst_path, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.write(src_path, arcname=save_file)
         if screenshot_bytes:
-            zf.writestr("screenshot.png", screenshot_bytes)
+            zf.writestr(ext, screenshot_bytes)
 
     max_backups = settings.get("max_backups", 20)
     pinned_names = get_pinned_list(backup_dir)
@@ -567,7 +549,7 @@ def auto_backup_worker():
                 save_dir, save_file, backup_dir = _get_backup_paths(settings)
                 if save_dir and save_file and os.path.exists(os.path.join(save_dir, save_file)):
                     _request_fspy_save(settings)
-                    screenshot_bytes = capture_screenshot_mss()
+                    screenshot_bytes, ext = capture_screenshot_mss()
 
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                     backup_name = f"autobackup_{timestamp}.zip"
@@ -576,7 +558,7 @@ def auto_backup_worker():
                     with zipfile.ZipFile(dst_path, "w", zipfile.ZIP_DEFLATED) as zf:
                         zf.write(os.path.join(save_dir, save_file), arcname=save_file)
                         if screenshot_bytes:
-                            zf.writestr("screenshot.png", screenshot_bytes)
+                            zf.writestr(ext, screenshot_bytes)
             except Exception as e:
                 print("Auto-backup failed:", e)
 
@@ -620,22 +602,64 @@ def active_backup():
     return jsonify({"success": True})
 
 
-@backup_bp.route("/browse", methods=["POST"])
-def browse_directory():
-    try:
-        import tkinter as tk
-        from tkinter import filedialog
+@backup_bp.route("/api/fs/list", methods=["POST"])
+def fs_list():
+    data = request.get_json(silent=True) or {}
+    path = data.get("path", "")
 
-        root = tk.Tk()
-        root.withdraw()
-        root.attributes("-topmost", True)
-        folder = filedialog.askdirectory()
-        root.destroy()
-        if folder:
-            return jsonify({"path": os.path.normpath(folder)})
+    try:
+        import string
+
+        # If path is empty, return drives
+        if not path:
+            drives = []
+            if os.name == "nt":
+                import ctypes
+
+                bitmask = ctypes.windll.kernel32.GetLogicalDrives()
+                for letter in string.ascii_uppercase:
+                    if bitmask & 1:
+                        drives.append(f"{letter}:\\")
+                    bitmask >>= 1
+            else:
+                drives = ["/"]
+
+            return jsonify({"drives": drives, "folders": [], "current": ""})
+
+        path = os.path.normpath(path)
+        if os.name == "nt" and len(path) == 2 and path[1] == ":":
+            path += "\\"
+
+        folders = []
+        if os.path.exists(path) and os.path.isdir(path):
+            try:
+                for d in os.listdir(path):
+                    full_path = os.path.join(path, d)
+                    if os.path.isdir(full_path):
+                        is_hidden = d.startswith(".")
+                        if os.name == "nt":
+                            try:
+                                import ctypes
+
+                                attrs = ctypes.windll.kernel32.GetFileAttributesW(str(full_path))
+                                if attrs != -1 and (attrs & 2):  # FILE_ATTRIBUTE_HIDDEN
+                                    is_hidden = True
+                            except Exception:
+                                pass
+                        folders.append({"name": d, "path": full_path, "hidden": is_hidden})
+            except PermissionError:
+                pass
+
+        folders.sort(key=lambda x: x["name"].lower())
+
+        parent = os.path.dirname(path)
+        if parent == path:
+            parent = ""
+
+        return jsonify({"drives": [], "folders": folders, "current": path, "parent": parent})
     except Exception as e:
-        print("Browse error:", e)
-    return jsonify({"path": ""})
+        print("FS List error:", e)
+        return jsonify({"error": str(e), "current": path, "parent": os.path.dirname(path), "folders": []})
 
 
 def get_async_key_state(vk):

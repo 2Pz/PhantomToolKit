@@ -202,3 +202,50 @@
     </div>
   </div>
 </div>
+
+<!-- Custom Web File Picker Modal -->
+<div id="file-picker-modal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-8">
+  <div class="bg-[#111] border border-white/10 shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col rounded-md overflow-hidden">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-white/5 shrink-0 bg-black/40">
+      <h3 class="text-sm fantasy-font text-[#bfa571] tracking-[0.2em] uppercase">Select Folder</h3>
+      <button id="file-picker-close" class="text-gray-500 hover:text-white transition-colors">✕</button>
+    </div>
+    
+    <!-- Address Bar Area -->
+    <div class="flex items-center gap-3 px-4 py-3 border-b border-white/5 shrink-0 bg-white/[0.02]">
+      <button id="file-picker-up" class="px-3 py-1.5 bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all rounded-sm flex items-center justify-center">
+        ↑ Up
+      </button>
+      <input type="text" id="file-picker-path" class="flex-1 bg-black/50 border border-white/10 rounded-sm px-4 py-1.5 text-sm text-gray-200 outline-none focus:border-[#bfa571]/50 font-mono text-xs" readonly />
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex min-h-0">
+      <!-- Sidebar (Drives) -->
+      <div class="w-48 border-r border-white/5 bg-black/20 p-4 flex flex-col gap-2 overflow-y-auto custom-scrollbar shrink-0" id="file-picker-drives">
+        <h4 class="text-[10px] fantasy-font text-gray-500 tracking-widest uppercase mb-2">Drives</h4>
+        <!-- Populated by JS -->
+      </div>
+      
+      <!-- Folder View -->
+      <div class="flex-1 p-4 overflow-y-auto custom-scrollbar relative" id="file-picker-content">
+        <div id="file-picker-loading" class="hidden absolute inset-0 bg-[#111]/80 backdrop-blur-sm flex items-center justify-center z-10">
+          <div class="w-8 h-8 border-2 border-[#bfa571] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <div class="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4" id="file-picker-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-white/5 shrink-0 bg-black/40 flex justify-between items-center">
+      <div class="text-[10px] text-gray-500 tracking-widest uppercase font-mono" id="file-picker-status"></div>
+      <div class="flex gap-3">
+        <button id="file-picker-cancel" class="px-6 py-2 border border-white/10 text-gray-300 bg-white/5 uppercase tracking-widest text-xs hover:bg-white/10 hover:border-white/20 transition-all rounded-sm">Cancel</button>
+        <button id="file-picker-select" class="px-6 py-2 bg-[#bfa571] text-black font-bold uppercase tracking-widest text-xs border border-[#bfa571] hover:brightness-110 shadow-[0_0_15px_rgba(191,165,113,0.3)] transition-all rounded-sm">Select Folder</button>
+      </div>
+    </div>
+  </div>
+</div>
