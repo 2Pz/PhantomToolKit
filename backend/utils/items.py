@@ -124,10 +124,10 @@ class ItemAssetService:
         import sys
 
         if hasattr(sys, "fspy_base_dir"):
-            return Path(sys.fspy_base_dir) / "items" / "ER"
+            return Path(sys.fspy_base_dir) / "items"
 
-        project_root = Path(__file__).resolve().parent.parent
-        return project_root / "items" / "ER"
+        project_root = Path(__file__).resolve().parent.parent.parent
+        return project_root / "items"
 
     def list_csv_files(self) -> list[str]:
         return sorted(path.name for path in self.items_dir().glob("*.csv"))

@@ -8,3 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Item Assets
+items/*.csv
+items/*.zip
+
