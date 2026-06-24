@@ -191,27 +191,24 @@ def _update_pinned_and_return(backup_dir, pinned):
 
 def capture_screenshot_mss():
     try:
-        import mss
+        from backend.utils.screenshot import capture_screenshot
 
-        with mss.mss() as sct:
-            sct_img = sct.grab(sct.monitors[1])
-
-            try:
-                import io
-
-                from PIL import Image
-
-                pil_img = Image.frombytes("RGB", sct_img.size, sct_img.rgb)
-                pil_img = pil_img.resize((320, 180), Image.LANCZOS)
-
-                img_byte_arr = io.BytesIO()
-                pil_img.save(img_byte_arr, format="PNG")
-                return img_byte_arr.getvalue(), "screenshot.png"
-            except ImportError:
-                return mss.tools.to_png(sct_img.rgb, sct_img.size), "screenshot.png"
+        data = capture_screenshot()
+        return (data, "screenshot.jpg") if data else (None, None)
     except Exception as e:
-        print("Screenshot error:", e)
-        return None, None
+        print(f"[screenshot] capture_screenshot_mss failed: {e}")
+        return (None, None)
+
+
+@backup_bp.route("/request-screenshot", methods=["POST"])
+def request_screenshot():
+    """Signal the host-side screenshot helper."""
+    try:
+        with open("/tmp/phantom_ss_request", "w") as f:
+            f.write(str(time.time()))
+        return jsonify({"success": True})
+    except OSError as e:
+        return jsonify({"success": False, "error": str(e)})
 
 
 @backup_bp.route("/screenshot/<name>", methods=["GET"])
@@ -385,7 +382,7 @@ def _restore_file(src_path, dst_path, settings):
 
     if src_path.endswith(".zip"):
         with zipfile.ZipFile(src_path, "r") as zf:
-            members = [m for m in zf.namelist() if m != "screenshot.png"]
+            members = [m for m in zf.namelist() if m not in ("screenshot.png", "screenshot.jpg")]
             if members:
                 with zf.open(members[0]) as source, open(dst_path, "wb") as target:
                     shutil.copyfileobj(source, target)

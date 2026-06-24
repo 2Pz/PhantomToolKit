@@ -26,6 +26,16 @@ def main():
     shutil.copytree("items", items_dir)
     print("Done! Items copied.")
 
+    print("Copying systemd units to dist/systemd...")
+    sd_dir = os.path.join("dist", "systemd")
+    if os.path.exists(sd_dir):
+        shutil.rmtree(sd_dir)
+    os.makedirs(sd_dir)
+    for f in ["phantom-screenshot.path", "phantom-screenshot.service"]:
+        if os.path.exists(f):
+            shutil.copy2(f, os.path.join(sd_dir, f))
+    print("Done! Systemd units copied.")
+
 
 if __name__ == "__main__":
     main()
