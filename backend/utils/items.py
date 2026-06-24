@@ -26,6 +26,8 @@ class ItemRow:
     is_equip: bool = False
     max_num: int | None = None
     raw: dict[str, Any] | None = None
+    csv_name: str = ""
+    global_id: int = 0
 
 
 def normalize_text(text: str) -> str:
@@ -41,6 +43,12 @@ def item_to_dict(item: ItemRow | dict | None) -> dict | None:
     out = dict(item) if isinstance(item, dict) else asdict(item)
     out.pop("normalized_name", None)
     out.pop("raw", None)
+
+    # Force Gesture category for Gesture IDs
+    raw_id = int(out["id"]) & 0x0FFFFFFF
+    if (9000 <= raw_id <= 9050) or (2009000 <= raw_id <= 2009010) or (210 <= raw_id <= 235):
+        out["category"] = "Gesture"
+
     return out
 
 
@@ -192,7 +200,10 @@ class ItemAssetService:
             item = self.enrich_weapon(payload["id"])
         elif _is_goods_slot_name(slot):
             item = self.enrich_goods(payload["id"])
-        item = item or item_to_dict(self.find_item_any_csv(payload["id"], hints=hints))
+
+        original_id = value.get("id") if isinstance(value, dict) else value
+
+        item = item or item_to_dict(self.find_item_any_csv(int(original_id), hints=hints))
         if item is None:
             item = {
                 "id": payload["id"],
@@ -206,6 +217,12 @@ class ItemAssetService:
             }
         item.update({key: value for key, value in payload.items() if key != "id"})
         item["id"] = payload["id"]
+
+        # Force Gesture category for Gesture IDs so they appear correctly in UI
+        raw_id = int(item["id"]) & 0x0FFFFFFF
+        if (9000 <= raw_id <= 9050) or (2009000 <= raw_id <= 2009010):
+            item["category"] = "Gesture"
+
         return item
 
     def enrich_weapon(self, item_id: int, language: str = "en") -> dict | None:
@@ -270,10 +287,14 @@ class ItemAssetService:
         for source in sources:
             table = self._load_csv(source)
             for item in table.values():
+                raw_id = item.id & 0x0FFFFFFF
+                is_gesture = (9000 <= raw_id <= 9050) or (2009000 <= raw_id <= 2009010) or (210 <= raw_id <= 235)
+                effective_cat = "Gesture" if is_gesture else item.category
+
                 if (
                     resolved_categories
                     and "ALL" not in resolved_categories
-                    and item.category not in resolved_categories
+                    and effective_cat not in resolved_categories
                 ):
                     continue
                 if equip_only and not _is_equippable(item):
@@ -416,6 +437,32 @@ def _load_csv(path: Path, language: str) -> dict[int, ItemRow]:
             if category and category.lower() in {"arrow", "bolt"}:
                 max_num = 99
 
+            if max_num is None:
+                if path.name in {"EquipParamWeapon.csv", "EquipParamProtector.csv", "EquipParamAccessory.csv"}:
+                    max_num = 1
+                else:
+                    max_num = 99
+
+            global_id = item_id
+            if path.name == "EquipParamWeapon.csv":
+                global_id |= 0x00000000
+            elif path.name == "EquipParamProtector.csv":
+                global_id |= 0x10000000
+            elif path.name == "EquipParamAccessory.csv":
+                global_id |= 0x20000000
+            elif path.name == "EquipParamGoods.csv":
+                global_id |= 0x40000000
+            elif path.name == "EquipParamGem.csv":
+                global_id |= 0x80000000
+
+            is_only_one = row.get("isOnlyOne", "0").replace('"', "").strip() == "1"
+
+            if (
+                is_only_one
+                or path.name in {"EquipParamWeapon.csv", "EquipParamProtector.csv", "EquipParamAccessory.csv"}
+            ) and (category and category.lower() not in {"arrow", "bolt"}):
+                max_num = 1
+
             out[item_id] = ItemRow(
                 id=item_id,
                 name=str(name),
@@ -423,9 +470,11 @@ def _load_csv(path: Path, language: str) -> dict[int, ItemRow]:
                 icon_id=str(row.get("icon_id")) if row.get("icon_id") else None,
                 max_upgrade=max_upgrade,
                 category=category,
-                is_only_one=(row.get("isOnlyOne", "0").replace('"', "").strip() == "1"),
+                is_only_one=is_only_one,
                 is_equip=(row.get("isEquip", "0").replace('"', "").strip() == "1"),
                 max_num=max_num,
                 raw=row,
+                csv_name=path.name,
+                global_id=global_id,
             )
     return out

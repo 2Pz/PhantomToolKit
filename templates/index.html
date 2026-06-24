@@ -23,11 +23,11 @@
     <div class="sidebar-btn" onclick="switchTab('cheats', this)">
       <span>Cheats</span>
     </div>
-    <div class="sidebar-btn" onclick="switchTab('backup', this)">
-      <span>Backup</span>
-    </div>
     <div class="sidebar-btn" onclick="switchTab('inventory', this)">
       <span>Inventory</span>
+    </div>
+    <div class="sidebar-btn" onclick="switchTab('backup', this)">
+      <span>Backup</span>
     </div>
   </div>
 
@@ -44,12 +44,12 @@
     {% include "views/cheats.html" %}
   </div>
 
-  <div id="backup-tab" class="hidden flex-1 flex flex-col p-8 space-y-8 fade-in min-h-0 overflow-hidden">
-    {% include "views/backup.html" %}
+  <div class="flex-1 hidden inter-font overflow-hidden" id="inventory-tab">
+    {% include "views/inventory.html" %}
   </div>
 
-  <div id="inventory-tab" class="hidden flex-1 flex flex-col p-8 space-y-8 fade-in">
-    {% include "views/inventory.html" %}
+  <div id="backup-tab" class="hidden flex-1 flex flex-col p-8 space-y-8 fade-in min-h-0 overflow-hidden">
+    {% include "views/backup.html" %}
   </div>
 
 
@@ -58,7 +58,7 @@
   <script src="{{ url_for('static', filename='js/tabs/main_tab.js') }}"></script>
   <script src="{{ url_for('static', filename='js/tabs/build_tab.js') }}"></script>
   <script src="{{ url_for('static', filename='js/tabs/cheats_tab.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/tabs/backup_tab.js') }}"></script>
   <script src="{{ url_for('static', filename='js/tabs/inventory_tab.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/tabs/backup_tab.js') }}"></script>
 </body>
 </html>

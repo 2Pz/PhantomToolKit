@@ -85,6 +85,7 @@ def _resolve_item_name(item_id: int, frontend_slot: str):
             "name": enriched.get("name", f"Item {item_id}"),
             "icon_id": enriched.get("icon_id"),
             "category": enriched.get("category"),
+            "max_num": enriched.get("max_num"),
         }
 
     # For weapons, extract the upgrade level from the item ID

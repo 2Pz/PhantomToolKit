@@ -8,6 +8,7 @@ from flask import Flask, jsonify, render_template, request, send_file
 
 from backend.tabs.backup_tab import backup_bp
 from backend.tabs.build_tab import apply_build, get_build_data, inspect_saved_build
+from backend.tabs.inventory_tab import inventory_bp
 from backend.tabs.main_tab import get_player_data, get_recent_build_snapshot, perform_game_action
 from backend.utils.item_catalog import lookup
 from backend.utils.items import ItemAssetService
@@ -133,6 +134,17 @@ def item_categories():
     service = ItemAssetService()
     slot = request.args.get("slot", "")
     csv_name = request.args.get("csv", "")
+    all_cats = request.args.get("all", "0")
+
+    if all_cats == "1":
+        categories = set()
+        categories.update(service.get_distinct_categories("EquipParamWeapon.csv", "wep_type"))
+        categories.update(service.get_distinct_categories("EquipParamProtector.csv", "protect_category"))
+        categories.update(service.get_distinct_categories("EquipParamAccessory.csv", "accessory_category"))
+        categories.update(service.get_distinct_categories("EquipParamGoods.csv", "goods_type"))
+        categories.add("Gesture")  # Ensure Gestures always show up in the filter
+        return jsonify({"categories": sorted(categories)})
+
     if slot:
         return jsonify({"categories": service.get_slot_categories(slot)})
     if csv_name:
@@ -184,6 +196,7 @@ def toggle_cheat_route():
 
 
 app.register_blueprint(backup_bp)
+app.register_blueprint(inventory_bp)
 
 
 if __name__ == "__main__":
