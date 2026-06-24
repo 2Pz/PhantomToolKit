@@ -66,25 +66,47 @@ def _gdiplus_resize_and_encode(input_file, output_file, width, height):
 
 
 def _capture_gdi_gdiplus():
-    """Windows GDI capture + GDI+ thumbnail resize and JPEG encode (zero Python dependencies)."""
+    """Windows GDI capture + GDI+ thumbnail resize and JPEG encode."""
     import ctypes
+    import ctypes.wintypes as wintypes
 
     user32 = ctypes.windll.user32
     gdi32 = ctypes.windll.gdi32
     gdiplus, token = _init_gdiplus()
 
+    class POINT(ctypes.Structure):
+        _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
+
     try:
+        hwnd = user32.GetForegroundWindow()
+        rect = wintypes.RECT()
+        pt = POINT(0, 0)
+        sw = 0
+        sh = 0
+
+        if hwnd:
+            user32.GetClientRect(hwnd, ctypes.byref(rect))
+            sw = rect.right - rect.left
+            sh = rect.bottom - rect.top
+            if sw <= 0 or sh <= 0:
+                hwnd = None
+            else:
+                user32.ClientToScreen(hwnd, ctypes.byref(pt))
+
+        if not hwnd:
+            sw = user32.GetSystemMetrics(0)
+            sh = user32.GetSystemMetrics(1)
+            pt.x = 0
+            pt.y = 0
+
         hdc = user32.GetDC(None)
         if not hdc:
             return None
         try:
-            sw = user32.GetSystemMetrics(0)
-            sh = user32.GetSystemMetrics(1)
-
             memdc = gdi32.CreateCompatibleDC(hdc)
             bmp = gdi32.CreateCompatibleBitmap(hdc, sw, sh)
             gdi32.SelectObject(memdc, bmp)
-            gdi32.BitBlt(memdc, 0, 0, sw, sh, hdc, 0, 0, 0x00CC0020)
+            gdi32.BitBlt(memdc, 0, 0, sw, sh, hdc, pt.x, pt.y, 0x00CC0020)
 
             pBitmap = ctypes.c_void_p()
             gdiplus.GdipCreateBitmapFromHBITMAP(bmp, None, ctypes.byref(pBitmap))
@@ -160,13 +182,23 @@ def _capture_host_spectacle():
     return None
 
 
+def _is_wine():
+    import ctypes
+
+    try:
+        return hasattr(ctypes.windll.ntdll, "wine_get_version")
+    except Exception:
+        return False
+
+
 def capture_screenshot():
     """Capture a screenshot → fixed 1920×1080 JPEG bytes, or None."""
     # 1) Host-side spectacle (Vulkan games in Wine)
-    with contextlib.suppress(Exception):
-        data = _capture_host_spectacle()
-        if data:
-            return data
+    if _is_wine():
+        with contextlib.suppress(Exception):
+            data = _capture_host_spectacle()
+            if data:
+                return data
     # 2) GDI (Wine/Proton, non-Vulkan)
     with contextlib.suppress(Exception):
         import ctypes
