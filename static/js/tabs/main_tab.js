@@ -59,7 +59,7 @@ function updateStats() {
               }
 
               html += `
-                <tr class="cursor-pointer transition-colors ${rowClass}" onclick='inspectPlayer(${p.steam_id || 0}, ${p.player_index ?? idx}, ${escapeHtml(JSON.stringify(p.name || ''))}, ${p.is_local ? 'true' : 'false'})'>
+                <tr class="cursor-pointer transition-colors ${rowClass}" onclick='inspectPlayer(${p.steam_id || 0}, ${p.player_index != null ? p.player_index : idx}, ${escapeHtml(JSON.stringify(p.name || ''))}, ${p.is_local ? 'true' : 'false'})'>
                   <td>
                     <div class="flex items-center font-bold text-[#bfa571]">
                       ${p.name}

@@ -10,11 +10,11 @@ function openInventoryTabShell() {
     const btn = Array.from(document.querySelectorAll('.sidebar-btn')).find(b => b.textContent.trim().toLowerCase() === 'inventory');
     if (btn) btn.classList.add('active');
     activeTab = 'inventory';
-    document.getElementById('main-tab')?.classList.add('hidden');
-    document.getElementById('cheats-tab')?.classList.add('hidden');
-    document.getElementById('backup-tab')?.classList.add('hidden');
-    document.getElementById('build-tab')?.classList.add('hidden');
-    document.getElementById('inventory-tab')?.classList.remove('hidden');
+    const mainTab = document.getElementById('main-tab'); if(mainTab) mainTab.classList.add('hidden');
+    const cheatsTab = document.getElementById('cheats-tab'); if(cheatsTab) cheatsTab.classList.add('hidden');
+    const backupTab = document.getElementById('backup-tab'); if(backupTab) backupTab.classList.add('hidden');
+    const buildTab = document.getElementById('build-tab'); if(buildTab) buildTab.classList.add('hidden');
+    const invTab = document.getElementById('inventory-tab'); if(invTab) invTab.classList.remove('hidden');
     
     refreshInventory();
     loadInvCategories();
@@ -43,8 +43,10 @@ function renderInventoryGrid() {
         return;
     }
     
-    const searchQ = (document.getElementById('inv-item-search')?.value || '').toLowerCase();
-    const catF = document.getElementById('inv-category-filter')?.value || '';
+    const searchInput = document.getElementById('inv-item-search');
+    const searchQ = (searchInput ? searchInput.value : '').toLowerCase();
+    const catInput = document.getElementById('inv-category-filter');
+    const catF = catInput ? catInput.value : '';
     
     let filtered = inventoryData;
     if (searchQ) filtered = filtered.filter(i => String(i.name).toLowerCase().includes(searchQ) || String(i.item_id).includes(searchQ));

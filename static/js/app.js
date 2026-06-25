@@ -651,7 +651,8 @@ let activeTab = 'main';
                     }
                     localBuild = result.build || { slots: {} };
                     if (document.getElementById('load-with-stats').checked) localStatus = result.status || {};
-                    if (document.getElementById('load-with-appearance')?.checked) localAppearance = result.appearance || null;
+                    const appCheckbox = document.getElementById('load-with-appearance');
+                    if (appCheckbox && appCheckbox.checked) localAppearance = result.appearance || null;
                     markBuildEditing();
                     renderStatusPanel();
                     renderEquipmentGrid();
@@ -671,7 +672,7 @@ let activeTab = 'main';
     }
 
     function loadBuildFile(event) {
-      const file = event.target.files?.[0];
+      const file = event.target.files ? event.target.files[0] : undefined;
       if (!file) return;
       file.text().then(text => {
         const data = JSON.parse(text);
@@ -692,7 +693,8 @@ let activeTab = 'main';
             }
             localBuild = result.build || { slots: {} };
             if (document.getElementById('load-with-stats').checked) localStatus = result.status || {};
-            if (document.getElementById('load-with-appearance')?.checked) localAppearance = result.appearance || null;
+            const appCheckbox = document.getElementById('load-with-appearance');
+            if (appCheckbox && appCheckbox.checked) localAppearance = result.appearance || null;
             markBuildEditing();
             renderStatusPanel();
             renderEquipmentGrid();
@@ -783,21 +785,27 @@ let activeTab = 'main';
     function isQuickSlot(slot) { return slot && slot.startsWith('quick_'); }
     function isAmmoSlot(slot) { return slot && slot.startsWith('ammo_'); }
     function isInspectingBuild() { return Boolean(inspectingSteamId || inspectingPlayerIndex !== null || inspectingCachedBuild); }
-    function slotLabel(slot) { return slot ? slot.replaceAll('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Slot'; }
-    function labelFor(key) { return key.replaceAll('_', ' ').replace(/\b\w/g, c => c.toUpperCase()); }
+    function slotLabel(slot) { return slot ? slot.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Slot'; }
+    function labelFor(key) { return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
     function escapeHtml(value) {
-      return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+      return String(value != null ? value : '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     }
     function escapeAttr(value) { return escapeHtml(value).replace(/`/g, '&#96;'); }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    window.initApp = function() {
+      try {
+        var req = new XMLHttpRequest();
+        req.open('GET', '/error_log/INIT_APP_STARTED', true);
+        req.send();
+      } catch(e) {}
       setInterval(updateStats, 1000);
       setInterval(() => updateBuild(false), 1000);
       updateStats();
       if (typeof renderStatusPanel === 'function') renderStatusPanel();
       if (typeof renderEquipmentGrid === 'function') renderEquipmentGrid();
       if (typeof renderConfigPanel === 'function') renderConfigPanel();
-    });
+      if (typeof renderCheats === 'function') renderCheats();
+    };
     
     const cheatList = [
       { key: 'noDead', label: 'No Dead', desc: 'Prevents HP from reaching zero.' },
@@ -809,8 +817,6 @@ let activeTab = 'main';
       { key: 'noGoods', label: 'No Goods', desc: 'Items are never consumed upon use.' },
       { key: 'noArrow', label: 'No Arrow', desc: 'Arrows and bolts are never consumed.' },
     ];
-
-    renderCheats();
 
 
 

@@ -68,11 +68,11 @@ function openBuildTabShell() {
       const buildButton = Array.from(document.querySelectorAll('.sidebar-btn')).find(btn => btn.textContent.trim().toLowerCase() === 'build');
       if (buildButton) buildButton.classList.add('active');
       activeTab = 'build';
-      document.getElementById('main-tab')?.classList.add('hidden');
-      document.getElementById('cheats-tab')?.classList.add('hidden');
-      document.getElementById('backup-tab')?.classList.add('hidden');
-      document.getElementById('inventory-tab')?.classList.add('hidden');
-      document.getElementById('build-tab')?.classList.remove('hidden');
+      const mainTab = document.getElementById('main-tab'); if(mainTab) mainTab.classList.add('hidden');
+      const cheatsTab = document.getElementById('cheats-tab'); if(cheatsTab) cheatsTab.classList.add('hidden');
+      const backupTab = document.getElementById('backup-tab'); if(backupTab) backupTab.classList.add('hidden');
+      const invTab = document.getElementById('inventory-tab'); if(invTab) invTab.classList.add('hidden');
+      const buildTab = document.getElementById('build-tab'); if(buildTab) buildTab.classList.remove('hidden');
     }
 
 function openMissingRecentBuild(name, message) {
@@ -193,7 +193,7 @@ function renderStatusPanel() {
             </div>
             <div class="flex justify-between items-center pr-2">
               <span class="text-xs fantasy-font text-gray-400 uppercase tracking-widest">Journey</span>
-              ${renderSpinbox('journey', localStatus.journey ?? 1, 'text-gray-100', 'w-10')}
+              ${renderSpinbox('journey', localStatus.journey != null ? localStatus.journey : 1, 'text-gray-100', 'w-10')}
             </div>
           </div>
         </div>
@@ -246,14 +246,14 @@ function renderSpinbox(key, value, extraClass = '', widthClass = 'w-10', readonl
       if (readonly) {
         return `
           <div class="flex items-center bg-transparent border border-transparent rounded overflow-hidden opacity-80 transition-colors">
-            <input id="status-${key}-input" class="bg-transparent text-center font-bold outline-none ${widthClass} inter-font text-base px-1 py-0.5 custom-spinbox-input ${extraClass}" type="number" value="${value ?? ''}" readonly>
+            <input id="status-${key}-input" class="bg-transparent text-center font-bold outline-none ${widthClass} inter-font text-base px-1 py-0.5 custom-spinbox-input ${extraClass}" type="number" value="${value != null ? value : ''}" readonly>
           </div>
         `;
       }
       return `
         <div class="flex items-center bg-white/5 border border-transparent hover:border-white/10 rounded overflow-hidden focus-within:border-[#bfa571]/50 transition-colors">
           <button type="button" class="px-2 py-0.5 text-gray-500 hover:text-[#bfa571] hover:bg-white/10 font-bold" onclick="adjustStatus(this, '${key}', -1)" tabindex="-1">-</button>
-          <input id="status-${key}-input" class="bg-transparent text-center font-bold outline-none ${widthClass} inter-font text-base px-1 py-0.5 custom-spinbox-input ${extraClass}" type="number" min="0" value="${value ?? ''}" oninput="setStatus('${key}', this.value)">
+          <input id="status-${key}-input" class="bg-transparent text-center font-bold outline-none ${widthClass} inter-font text-base px-1 py-0.5 custom-spinbox-input ${extraClass}" type="number" min="0" value="${value != null ? value : ''}" oninput="setStatus('${key}', this.value)">
           <button type="button" class="px-2 py-0.5 text-gray-500 hover:text-[#bfa571] hover:bg-white/10 font-bold" onclick="adjustStatus(this, '${key}', 1)" tabindex="-1">+</button>
         </div>
       `;
@@ -380,15 +380,15 @@ function renderEquipmentGrid() {
     }
 
 function renderSlot(slot, label, sizeClass) {
-      const item = localBuild.slots?.[slot];
+      const item = localBuild.slots ? localBuild.slots[slot] : undefined;
       const selected = selectedSlot === slot ? 'selected' : '';
       const size = sizeClass || 'w-16 h-16 md:w-20 md:h-20';
-      const icon = item?.icon_id ? `<img src="/api/icons/${item.icon_id}" alt="${escapeAttr(item.name || '')}" class="w-[85%] h-[85%] object-contain brightness-90 contrast-110 border border-white/5 z-10">` : '';
+      const icon = item && item.icon_id ? `<img src="/api/icons/${item.icon_id}" alt="${escapeAttr(item.name || '')}" class="w-[85%] h-[85%] object-contain brightness-90 contrast-110 border border-white/5 z-10">` : '';
       const fallback = icon ? '' : `<div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none text-[#555]"><span class="text-[9px] uppercase tracking-widest">${label}</span></div>`;
-      const count = item?.count && item.count > 1 ? `<span class="absolute bottom-1 right-2 text-xs font-bold text-gray-300 z-20 font-mono">${item.count}</span>` : '';
-      const upgrade = item?.upgrade && item.upgrade > 0 ? `<span class="absolute bottom-1 right-1 text-xs font-bold text-cyan-200 z-20 font-mono bg-black/40 px-1 rounded-sm">+${item.upgrade}</span>` : '';
+      const count = item && item.count && item.count > 1 ? `<span class="absolute bottom-1 right-2 text-xs font-bold text-gray-300 z-20 font-mono">${item.count}</span>` : '';
+      const upgrade = item && item.upgrade && item.upgrade > 0 ? `<span class="absolute bottom-1 right-1 text-xs font-bold text-cyan-200 z-20 font-mono bg-black/40 px-1 rounded-sm">+${item.upgrade}</span>` : '';
       return `
-        <button title="${escapeAttr(item?.name || label)}" class="relative soulslike-slot slot-corner cursor-pointer flex items-center justify-center transition-all duration-200 ${size} ${selected}" onmouseenter="hoveredSlot='${slot}'" onmouseleave="hoveredSlot=null" onclick="selectSlot('${slot}')" oncontextmenu="event.preventDefault(); clearSlot('${slot}');">
+        <button title="${escapeAttr((item && item.name) || label)}" class="relative soulslike-slot slot-corner cursor-pointer flex items-center justify-center transition-all duration-200 ${size} ${selected}" onmouseenter="hoveredSlot='${slot}'" onmouseleave="hoveredSlot=null" onclick="selectSlot('${slot}')" oncontextmenu="event.preventDefault(); clearSlot('${slot}');">
           ${fallback}
           ${icon}
           ${count}
@@ -506,7 +506,7 @@ function selectPendingItem(item) {
       if (isInspectingBuild()) return;
       markBuildEditing();
       const finish = (enriched) => {
-        pendingItem = { ...(enriched || item), id: item.id, name: item.name, category: item.category || enriched?.category, icon_id: item.icon_id || enriched?.icon_id };
+        pendingItem = { ...(enriched || item), id: item.id, name: item.name, category: item.category || (enriched ? enriched.category : undefined), icon_id: item.icon_id || (enriched ? enriched.icon_id : undefined) };
         if (isAmmoSlot(selectedSlot) && !pendingItem.count) pendingItem.count = 99;
         if (isQuickSlot(selectedSlot) && !pendingItem.is_only_one && pendingItem.count === undefined) pendingItem.count = null;
         ashResults = [];
@@ -533,7 +533,7 @@ function selectPendingItem(item) {
 
 function renderConfigPanel() {
       const panel = document.getElementById('config-panel');
-      const item = pendingItem || (selectedSlot ? localBuild.slots?.[selectedSlot] : null);
+      const item = pendingItem || (selectedSlot && localBuild.slots ? localBuild.slots[selectedSlot] : null);
       if (!selectedSlot) {
         panel.innerHTML = `
           <div class="flex gap-4">
@@ -608,7 +608,7 @@ function renderConfigPanel() {
     }
 
 function customizeCurrentItem() {
-      const item = selectedSlot ? localBuild.slots?.[selectedSlot] : null;
+      const item = selectedSlot && localBuild.slots ? localBuild.slots[selectedSlot] : null;
       if (item) {
         if (isWeaponSlot(selectedSlot)) {
           fetch('/api/items/enrich/weapon?id=' + encodeURIComponent(item.id))
@@ -721,7 +721,7 @@ function renderSpiritConfig(item) {
 function renderQuantityConfig(item) {
       if (!item || (!isQuickSlot(selectedSlot) && !isAmmoSlot(selectedSlot)) || item.is_only_one) return '';
       const max = item.max_num || 99;
-      const current = item.count ?? (isAmmoSlot(selectedSlot) ? 99 : 1);
+      const current = item.count != null ? item.count : (isAmmoSlot(selectedSlot) ? 99 : 1);
       return `
         <label class="block text-xs uppercase tracking-wider text-gray-500 mt-3">
           Quantity ${item.count == null && isQuickSlot(selectedSlot) ? 'KEEP' : current}
@@ -757,8 +757,10 @@ function applyBuild() {
         return;
       }
       const loadStats = document.getElementById('load-with-stats').checked;
-      const loadApp = document.getElementById('load-with-appearance')?.checked;
-      const loadEquip = document.getElementById('load-with-equipment')?.checked ?? true;
+      const loadAppCheckbox = document.getElementById('load-with-appearance');
+      const loadApp = loadAppCheckbox ? loadAppCheckbox.checked : false;
+      const loadEquipCheckbox = document.getElementById('load-with-equipment');
+      const loadEquip = loadEquipCheckbox ? loadEquipCheckbox.checked : true;
       fetch('/api/build/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

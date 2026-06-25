@@ -60,7 +60,14 @@ def _get_main_player_hp():
 def get_player_data():
     global _recent_players
     try:
-        world = fspy.PyWorldChrMan.get_instance()
+        try:
+            world = fspy.PyWorldChrMan.get_instance()
+        except RuntimeError as e:
+            if "not initialized" in str(e):
+                world = None
+            else:
+                raise
+
         if world is None or getattr(world, "is_null", False):
             recent_out = [p for _, p in sorted(_recent_players.items(), key=lambda x: x[1]["last_seen"], reverse=True)]
             return {"loaded": False, "recent_players": recent_out}
@@ -152,6 +159,9 @@ def get_player_data():
                     if not player_obj["is_local"]:
                         _recent_players[steam_id] = player_obj
             except Exception:
+                import traceback
+
+                traceback.print_exc()
                 continue
 
         # Prepare recent players list (exclude current players)
@@ -165,6 +175,9 @@ def get_player_data():
 
         return {"loaded": True, "players": players_out, "recent_players": recent_out}
     except Exception as e:
+        import traceback
+
+        traceback.print_exc()
         return {"loaded": False, "_debug": {"error": str(e)}}
 
 

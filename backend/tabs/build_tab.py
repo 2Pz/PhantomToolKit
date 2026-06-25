@@ -497,6 +497,9 @@ def _read_full_player_data(pgd, local_eq=None):
 
 
 def _handle_build_error(e):
+    import traceback
+
+    traceback.print_exc()
     if "not initialized" in str(e):
         return {"loaded": False, "message": "Game not loaded."}
     return {"loaded": False, "message": str(e)}
@@ -512,6 +515,9 @@ def get_build_snapshot_from_pgd(pgd, local_eq=None):
         stats, slots, appearance = _read_full_player_data(pgd, local_eq)
         return {"status": stats, "build": {"slots": slots}, "appearance": appearance}
     except Exception:
+        import traceback
+
+        traceback.print_exc()
         return None
 
 

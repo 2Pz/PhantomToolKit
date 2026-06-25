@@ -52,6 +52,33 @@ def log(msg):
         pass
 
 
+class LoggerWriter:
+    def __init__(self, prefix=""):
+        self.prefix = prefix
+
+    def write(self, message):
+        msg = message.rstrip()
+        if not msg:
+            return
+        if self._is_http(msg):
+            return
+        if self.prefix:
+            log(f"{self.prefix}{msg}")
+        else:
+            log(msg)
+
+    @staticmethod
+    def _is_http(msg):
+        return any(m in msg for m in ('"GET ', '"POST ', '"PUT ', '"DELETE ', '"PATCH '))
+
+    def flush(self):
+        pass
+
+
+sys.stdout = LoggerWriter()
+sys.stderr = LoggerWriter("ERROR: ")
+
+
 def start_web_server():
     log("Starting web server on http://127.0.0.1:5000")
     stop_event = getattr(builtins, "__fspy_reload_stop__", None)
