@@ -193,20 +193,50 @@ def _read_equipment_from_pgd(pgd):
         return pid
 
     def ammo_item(val):
-        return {"id": val} if val > 0 else -1
+        if val <= 0:
+            return -1
+
+        # Respect the CSV max quantity, defaulting to 99 if not found
+        item_info = _get_service().find_item_any_csv(val, hints=["EquipParamWeapon.csv"])
+        count = item_info.max_num if item_info and item_info.max_num else 99
+
+        try:
+            inv_data = pgd.equipment.equip_inventory_data.items_data
+            found = False
+            # Check normal items first as ammo is almost always here
+            for entry in inv_data.normal_entries_list():
+                if (entry.item_id.param_id() & 0x0FFFFFFF) == val:
+                    count = getattr(entry, "quantity", 99)
+                    found = True
+                    break
+
+            if not found:
+                for entry in inv_data.key_entries_list():
+                    if (entry.item_id.param_id() & 0x0FFFFFFF) == val:
+                        count = getattr(entry, "quantity", 99)
+                        break
+        except Exception:
+            pass
+
+        return {"id": val, "count": count}
 
     def equip_data_item(data_item):
         def resolve_inventory_index(index):
             try:
                 inv_data = pgd.equipment.equip_inventory_data.items_data
                 key_cap = inv_data.key_items_capacity
-                norm_idx = index - key_cap
-                inv_entries = inv_data.normal_entries_list()
-                if 0 <= norm_idx < len(inv_entries):
-                    entry = inv_entries[norm_idx]
+                if index < key_cap:
+                    inv_entries = inv_data.key_entries_list()
+                    idx_to_check = index
+                else:
+                    inv_entries = inv_data.normal_entries_list()
+                    idx_to_check = index - key_cap
+
+                if 0 <= idx_to_check < len(inv_entries):
+                    entry = inv_entries[idx_to_check]
                     item_id = entry.item_id.param_id() & 0x0FFFFFFF
                     if item_id > 0:
-                        return {"id": item_id}
+                        return {"id": item_id, "count": getattr(entry, "quantity", 1)}
             except Exception:
                 pass
             return None
@@ -221,11 +251,14 @@ def _read_equipment_from_pgd(pgd):
         else:
             if data_item.is_null:
                 return -1
+
+            if hasattr(data_item, "index"):
+                res = resolve_inventory_index(data_item.index)
+                if res:
+                    return res
+
             if hasattr(data_item, "gaitem_handle_is_none") and not data_item.gaitem_handle_is_none():
                 handle = data_item.gaitem_handle
-            elif hasattr(data_item, "index"):
-                res = resolve_inventory_index(data_item.index)
-                return res if res else -1
             else:
                 return -1
 
