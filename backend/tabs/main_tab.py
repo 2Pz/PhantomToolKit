@@ -185,10 +185,46 @@ def perform_game_action(action_type):
     try:
         if action_type == "fix_infinite_loading":
             try:
-                success = fspy.trigger_lua_warp(11102950)
+                import time
+
+                #    Write grace ID warp target to GameMan before warping
+                try:
+                    gm = fspy.PyGameMan.get_instance()
+                    if gm and not gm.is_null:
+                        warp_bytes = list((11102950).to_bytes(4, "little"))
+                        fspy.patch_memory(gm.address + 0xB60, warp_bytes)
+                except Exception:
+                    pass
+
+                # Safety check: not in multiplayer
+                try:
+                    wcm = fspy.PyWorldChrMan.get_instance()
+                    if wcm and not wcm.is_null:
+                        chr_set = getattr(wcm, "player_chr_set", None)
+                        if chr_set and not chr_set.is_null:
+                            players = chr_set.characters()
+                            if len(players) > 1:
+                                return {"success": False, "message": "Cannot warp while in multiplayer."}
+                except Exception:
+                    pass
+
+                # Warp with retry (up to 5 seconds)
+                warped = False
+                end_time = time.time() + 5.0
+                while time.time() < end_time and not warped:
+                    try:
+                        if fspy.trigger_lua_warp(11102950):
+                            warped = True
+                            break
+                    except Exception:
+                        pass
+                    time.sleep(0.5)
+
                 return {
-                    "success": success,
-                    "message": "Warping to Roundtable Hold to fix infinite loading." if success else "Failed to warp.",
+                    "success": warped,
+                    "message": "Warping to Roundtable Hold to fix infinite loading."
+                    if warped
+                    else "Failed to warp after multiple attempts.",
                 }
             except Exception as e:
                 return {"success": False, "message": f"Warp error: {e}"}
