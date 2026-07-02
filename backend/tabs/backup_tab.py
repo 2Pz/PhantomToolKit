@@ -12,20 +12,12 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
+from backend.utils.config import get_base_dir, get_settings_path
+
 backup_bp = Blueprint("backup", __name__, url_prefix="/api/backup")
 
 auto_backup_thread = None
 auto_backup_running = False
-
-
-def get_base_dir():
-    import sys
-
-    return getattr(sys, "fspy_base_dir", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
-
-def get_settings_path():
-    return os.path.join(get_base_dir(), "phantomtoolkit.ini")
 
 
 def get_default_settings():
