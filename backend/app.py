@@ -257,5 +257,11 @@ def serve_external_local(filename):
     return send_from_directory(local_dir, filename)
 
 
+@app.route("/error_log/<path:msg>")
+def handle_error_log(msg):
+    print(f"Frontend JS Log: {msg}")
+    return jsonify({"success": True})
+
+
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)

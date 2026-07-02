@@ -93,7 +93,12 @@ def start_web_server():
         builtins.__fspy_web_server = None
 
     try:
+        import logging
+
         import werkzeug.serving
+
+        log_werkzeug = logging.getLogger("werkzeug")
+        log_werkzeug.setLevel(logging.ERROR)
 
         from backend.app import app
 
