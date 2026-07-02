@@ -229,6 +229,10 @@ class ItemAssetService:
         if (9000 <= raw_id <= 9050) or (2009000 <= raw_id <= 2009010):
             item["category"] = "Gesture"
 
+        # Hide icons for empty slots so the frontend renders the text fallback
+        if raw_id in (110000, 10000, 10100, 10200, 10300):
+            item["icon_id"] = None
+
         return item
 
     def enrich_weapon(self, item_id: int, language: str | None = None) -> dict | None:
