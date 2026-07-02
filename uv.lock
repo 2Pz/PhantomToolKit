@@ -57,7 +57,10 @@ source = { directory = "../fromsoftware-py" }
 [package.metadata]
 
 [package.metadata.requires-dev]
-dev = [{ name = "setuptools", specifier = ">=61.0.0" }]
+dev = [
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "setuptools", specifier = ">=61.0.0" },
+]
 
 [[package]]
 name = "itsdangerous"
