@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@400;600&family=Cairo:wght@400;600;700;900&family=Noto+Sans+Arabic:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5">
   <script>
     window.onerror = function(msg, url, line, col, error) {
@@ -24,21 +24,25 @@
 <body class="textured-bg">
 
   <!-- Sidebar -->
-  <div class="sidebar">
+  <div class="sidebar flex flex-col h-full">
     <div class="sidebar-btn active" onclick="switchTab('main', this)">
-      <span>Main</span>
+      <span data-i18n="tab_main">Main</span>
     </div>
     <div class="sidebar-btn" onclick="switchTab('build', this)">
-      <span>Build</span>
+      <span data-i18n="tab_build">Build</span>
     </div>
     <div class="sidebar-btn" onclick="switchTab('cheats', this)">
-      <span>Cheats</span>
+      <span data-i18n="tab_cheats">Cheats</span>
     </div>
     <div class="sidebar-btn" onclick="switchTab('inventory', this)">
-      <span>Inventory</span>
+      <span data-i18n="tab_inventory">Inventory</span>
     </div>
     <div class="sidebar-btn" onclick="switchTab('backup', this)">
-      <span>Backup</span>
+      <span data-i18n="tab_backup">Backup</span>
+    </div>
+    <div class="mt-auto px-2 pb-4 w-full">
+      <select id="language-select" onchange="changeLanguage(this.value)" class="w-full appearance-none bg-black/40 text-gray-300 border border-white/5 hover:border-[#bfa571]/50 rounded px-1 py-1.5 text-[11px] sm:text-xs outline-none cursor-pointer text-center" style="text-align-last: center;">
+      </select>
     </div>
   </div>
 
@@ -61,6 +65,11 @@
 
   <div id="backup-tab" class="hidden flex-1 flex flex-col p-8 space-y-8 fade-in min-h-0 overflow-hidden">
     {% include "views/backup.html" %}
+  </div>
+
+  <!-- Centralized System Message Toast -->
+  <div id="system-message-toast" class="fixed top-8 left-1/2 transform -translate-x-1/2 -translate-y-4 bg-black/90 border border-[#bfa571]/50 text-[#bfa571] px-6 py-3 rounded shadow-2xl opacity-0 pointer-events-none transition-all duration-300 z-[999] flex items-center gap-3 backdrop-blur-sm">
+    <span class="fantasy-font uppercase tracking-widest font-bold text-xs" id="system-message-text"></span>
   </div>
 
 

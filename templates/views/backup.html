@@ -1,13 +1,13 @@
 <div class="flex justify-between items-center mb-6 px-2">
   <div class="flex items-center gap-4">
     <div class="flex flex-col">
-      <h2 class="text-xl fantasy-font text-gray-100 tracking-[0.2em] uppercase">Backup Archives</h2>
+      <h2 class="text-xl fantasy-font text-gray-100 tracking-[0.2em] uppercase" data-i18n="bkp_title">Backup Archives</h2>
       <div class="status-header-line w-24 mb-0 opacity-50"></div>
     </div>
     
     <div id="auto-backup-indicator" class="flex items-center gap-2 px-3 py-1 rounded-full border bg-red-500/10 border-red-500/30">
       <div id="auto-backup-dot" class="w-2 h-2 rounded-full bg-red-500"></div>
-      <span id="auto-backup-text" class="text-[10px] fantasy-font tracking-widest uppercase font-bold text-red-400">
+      <span id="auto-backup-text" class="text-[10px] fantasy-font tracking-widest uppercase font-bold text-red-400" data-i18n="bkp_auto_inactive">
         Auto-Backup Inactive
       </span>
     </div>
@@ -21,7 +21,7 @@
   <!-- Left Pane: Visual Archive Gallery -->
   <div class="w-[350px] flex flex-col min-h-0 relative">
     <div class="mb-4 flex gap-2">
-       <button id="backup-settings-btn" class="flex-1 py-2 text-[10px] fantasy-font tracking-[0.2em] uppercase border transition-all bg-black/40 text-gray-500 border-white/5 hover:border-white/20 hover:text-gray-300">
+       <button id="backup-settings-btn" class="flex-1 py-2 text-[10px] fantasy-font tracking-[0.2em] uppercase border transition-all bg-black/40 text-gray-500 border-white/5 hover:border-white/20 hover:text-gray-300" data-i18n="bkp_settings">
          Settings
        </button>
        <button id="backup-refresh-btn" class="px-4 py-2 text-[10px] fantasy-font border border-white/5 text-gray-500 hover:text-white hover:bg-white/5 transition-all">
@@ -32,7 +32,7 @@
     <!-- Pinned section -->
     <div id="pinned-backups-container" class="shrink-0 mb-6 hidden">
       <h3 class="text-[11px] fantasy-font text-[#bfa571] tracking-[0.3em] uppercase mb-4 px-1 flex items-center gap-3">
-        <span class="font-bold">Pinned Favorites</span>
+        <span class="font-bold" data-i18n="bkp_pinned">Pinned Favorites</span>
         <div class="flex-1 h-px bg-[#bfa571]/20"></div>
       </h3>
       <div id="pinned-backups-list" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
@@ -42,22 +42,22 @@
     <!-- Recent Archives section -->
     <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
       <h3 class="text-[11px] fantasy-font text-gray-500 tracking-[0.3em] uppercase mb-4 px-1 flex items-center gap-3 shrink-0">
-        <span class="opacity-50 font-bold">Recent Archives</span>
+        <span class="opacity-50 font-bold" data-i18n="bkp_recent">Recent Archives</span>
         <div class="flex-1 h-px bg-white/5"></div>
       </h3>
       
       <div id="regular-backups-list" class="flex-1 overflow-y-auto custom-scrollbar pr-3 space-y-3 pb-4">
         <div class="p-10 text-center border border-dashed border-white/5 rounded-lg">
-          <p class="text-gray-600 text-sm italic">No archives found.</p>
+          <p class="text-gray-600 text-sm italic" data-i18n="bkp_no_archives">No archives found.</p>
         </div>
       </div>
     </div>
 
     <div class="mt-6 flex flex-col gap-2">
-      <button id="create-backup-btn" class="w-full bg-[#bfa571] text-black font-bold uppercase tracking-widest py-3 text-xs border border-[#bfa571] hover:brightness-110 transition-all shadow-[0_0_15px_rgba(191,165,113,0.3)] hover:shadow-[0_0_25px_rgba(191,165,113,0.5)]">
+      <button id="create-backup-btn" class="w-full bg-[#bfa571] text-black font-bold uppercase tracking-widest py-3 text-xs border border-[#bfa571] hover:brightness-110 transition-all shadow-[0_0_15px_rgba(191,165,113,0.3)] hover:shadow-[0_0_25px_rgba(191,165,113,0.5)]" data-i18n="bkp_create">
          Create New Backup
       </button>
-      <button id="toggle-auto-backup-btn" class="w-full border border-white/10 text-gray-300 bg-white/5 uppercase tracking-widest py-3 text-xs hover:bg-white/10 hover:border-white/20 transition-all">
+      <button id="toggle-auto-backup-btn" class="w-full border border-white/10 text-gray-300 bg-white/5 uppercase tracking-widest py-3 text-xs hover:bg-white/10 hover:border-white/20 transition-all" data-i18n="bkp_start_auto">
          Start Auto
       </button>
     </div>
@@ -69,28 +69,28 @@
     <!-- Settings Overlay Layer -->
     <div id="backup-settings-panel" class="hidden absolute inset-0 z-20 bg-black/90 backdrop-blur-md border border-white/10 p-8 overflow-y-auto custom-scrollbar flex-col gap-8">
       <div class="flex justify-between items-center border-b border-[#bfa571]/30 pb-4 shrink-0">
-        <h3 class="text-xl fantasy-font text-[#bfa571] tracking-[0.2em] uppercase">Configuration</h3>
+        <h3 class="text-xl fantasy-font text-[#bfa571] tracking-[0.2em] uppercase" data-i18n="bkp_config">Configuration</h3>
         <button id="close-settings-btn" class="text-gray-500 hover:text-white transition-colors">✕</button>
       </div>
 
       <!-- Path Settings -->
       <div class="space-y-4 shrink-0">
-        <h4 class="text-xs fantasy-font text-gray-500 tracking-[0.2em] uppercase mb-4 border-l-2 border-[#bfa571] pl-3">Directories</h4>
+        <h4 class="text-xs fantasy-font text-gray-500 tracking-[0.2em] uppercase mb-4 border-l-2 border-[#bfa571] pl-3" data-i18n="bkp_dirs">Directories</h4>
         <div class="grid gap-4">
           <div>
-            <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold">Save File Location</label>
+            <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold" data-i18n="bkp_save_loc">Save File Location</label>
             <div class="flex gap-2">
               <input type="text" id="setting-save-dir" class="flex-1 bg-black/40 border border-white/10 rounded-sm px-4 py-2 text-sm text-gray-200 focus:border-[#bfa571]/50 outline-none transition-all" placeholder="Path to game saves..." />
-              <button id="setting-auto-find" class="px-4 bg-white/5 border border-white/10 text-[10px] fantasy-font hover:text-[#bfa571] hover:border-[#bfa571]/30 transition-all uppercase tracking-widest">Find</button>
-              <button id="setting-browse-save" class="px-4 bg-white/5 border border-white/10 text-[10px] fantasy-font hover:text-[#bfa571] hover:border-[#bfa571]/30 transition-all uppercase tracking-widest">Browse</button>
+              <button id="setting-auto-find" class="px-4 bg-white/5 border border-white/10 text-[10px] fantasy-font hover:text-[#bfa571] hover:border-[#bfa571]/30 transition-all uppercase tracking-widest" data-i18n="bkp_find">Find</button>
+              <button id="setting-browse-save" class="px-4 bg-white/5 border border-white/10 text-[10px] fantasy-font hover:text-[#bfa571] hover:border-[#bfa571]/30 transition-all uppercase tracking-widest" data-i18n="bkp_browse">Browse</button>
             </div>
             <div id="auto-find-results" class="hidden mt-2 border border-white/10 bg-black/60 rounded-sm overflow-hidden divide-y divide-white/5"></div>
           </div>
           <div>
-            <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold">Backup Archive Path</label>
+            <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold" data-i18n="bkp_archive_path">Backup Archive Path</label>
             <div class="flex gap-2">
               <input type="text" id="setting-backup-dir" class="flex-1 bg-black/40 border border-white/10 rounded-sm px-4 py-2 text-sm text-gray-200 focus:border-[#bfa571]/50 outline-none transition-all" placeholder="Path to backup storage..." />
-              <button id="setting-browse-backup" class="px-4 bg-white/5 border border-white/10 text-[10px] fantasy-font hover:text-[#bfa571] hover:border-[#bfa571]/30 transition-all uppercase tracking-widest">Browse</button>
+              <button id="setting-browse-backup" class="px-4 bg-white/5 border border-white/10 text-[10px] fantasy-font hover:text-[#bfa571] hover:border-[#bfa571]/30 transition-all uppercase tracking-widest" data-i18n="bkp_browse">Browse</button>
             </div>
           </div>
         </div>
@@ -99,23 +99,23 @@
       <!-- Behavior Settings -->
       <div class="grid grid-cols-2 gap-8 shrink-0">
          <div class="space-y-4">
-            <h4 class="text-xs fantasy-font text-gray-500 tracking-[0.2em] uppercase mb-4 border-l-2 border-[#bfa571] pl-3">Archive Behavior</h4>
+            <h4 class="text-xs fantasy-font text-gray-500 tracking-[0.2em] uppercase mb-4 border-l-2 border-[#bfa571] pl-3" data-i18n="bkp_behavior">Archive Behavior</h4>
             <div class="space-y-4">
               <div>
-                <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold">Active Save File</label>
+                <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold" data-i18n="bkp_active_save">Active Save File</label>
                 <select id="setting-save-file" class="w-full bg-black/40 border border-white/10 rounded-sm px-3 py-2 text-sm text-gray-300 outline-none focus:border-[#bfa571]/50">
                 </select>
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold">Method</label>
+                  <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold" data-i18n="bkp_method">Method</label>
                   <select id="setting-method" class="w-full bg-black/40 border border-white/10 rounded-sm px-3 py-2 text-sm text-gray-300 outline-none focus:border-[#bfa571]/50">
                     <option value="0">Interval</option>
                     <option value="1">Watcher</option>
                   </select>
                 </div>
                 <div>
-                   <label id="setting-method-label" class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold">Mins</label>
+                   <label id="setting-method-label" class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest fantasy-font font-bold" data-i18n="bkp_mins">Mins</label>
                    <input type="number" id="setting-interval" class="w-full bg-black/40 border border-white/10 rounded-sm px-3 py-2 text-sm text-gray-300" />
                 </div>
               </div>
@@ -123,7 +123,7 @@
               <!-- Max Backups Slider -->
               <div>
                 <div class="flex justify-between mb-2">
-                  <label class="block text-[10px] text-gray-500 uppercase tracking-widest fantasy-font font-bold">Max Saves</label>
+                  <label class="block text-[10px] text-gray-500 uppercase tracking-widest fantasy-font font-bold" data-i18n="bkp_max_saves">Max Saves</label>
                   <span id="setting-max-backups-val" class="text-xs text-[#bfa571] font-bold">20</span>
                 </div>
                 <input type="range" id="setting-max-backups" min="5" max="100" step="5" class="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#bfa571]" />
@@ -132,7 +132,7 @@
               <!-- Notification Volume Slider -->
               <div>
                 <div class="flex justify-between mb-2">
-                  <label class="block text-[10px] text-gray-500 uppercase tracking-widest fantasy-font font-bold">Notification Volume</label>
+                  <label class="block text-[10px] text-gray-500 uppercase tracking-widest fantasy-font font-bold" data-i18n="bkp_vol">Notification Volume</label>
                   <span id="setting-volume-val" class="text-xs text-[#bfa571] font-bold">50%</span>
                 </div>
                 <input type="range" id="setting-volume" min="0" max="100" class="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#bfa571]" />
@@ -140,7 +140,7 @@
 
               <div class="flex items-center gap-3 p-3 bg-white/5 border border-white/5 rounded-sm">
                 <input type="checkbox" id="setting-safeload" class="w-4 h-4 bg-black border-white/20 text-[#bfa571] rounded focus:ring-0" />
-                <label for="setting-safeload" class="text-xs fantasy-font tracking-widest text-gray-300 cursor-pointer uppercase">
+                <label for="setting-safeload" class="text-xs fantasy-font tracking-widest text-gray-300 cursor-pointer uppercase" data-i18n="bkp_safe_load">
                   Safe Load (Return to Menu)
                 </label>
               </div>
@@ -148,14 +148,14 @@
          </div>
 
          <div class="space-y-4">
-            <h4 class="text-xs fantasy-font text-gray-500 tracking-[0.2em] uppercase mb-4 border-l-2 border-[#bfa571] pl-3">Global Hotkeys</h4>
+            <h4 class="text-xs fantasy-font text-gray-500 tracking-[0.2em] uppercase mb-4 border-l-2 border-[#bfa571] pl-3" data-i18n="bkp_hotkeys">Global Hotkeys</h4>
             <div id="keybind-container" class="grid grid-cols-1 gap-4">
             </div>
          </div>
       </div>
 
       <div class="mt-auto pt-8 border-t border-white/10 flex justify-end shrink-0">
-        <button id="save-settings-btn" class="px-10 py-3 fantasy-font tracking-[0.2em] uppercase text-xs font-bold transition-all border bg-[#bfa571] text-black border-[#bfa571] hover:brightness-110">
+        <button id="save-settings-btn" class="px-10 py-3 fantasy-font tracking-[0.2em] uppercase text-xs font-bold transition-all border bg-[#bfa571] text-black border-[#bfa571] hover:brightness-110" data-i18n="bkp_commit">
           Commit Changes
         </button>
       </div>
@@ -167,7 +167,7 @@
       <div class="relative group rounded-lg overflow-hidden border border-[#bfa571]/20 shadow-2xl bg-black/50 flex-1 min-h-0">
         <div id="selected-backup-img-fallback" class="absolute inset-0 flex flex-col items-center justify-center opacity-20">
           <span class="text-6xl mb-4">🖼️</span>
-          <span class="fantasy-font tracking-[0.4em] uppercase text-sm">No Preview Captured</span>
+          <span class="fantasy-font tracking-[0.4em] uppercase text-sm" data-i18n="bkp_no_preview">No Preview Captured</span>
         </div>
         <img id="selected-backup-img" src="" class="hidden w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -184,10 +184,10 @@
       <!-- Action Grid - Pushed to bottom with minimal gap -->
       <div class="mt-4 shrink-0">
         <div class="grid grid-cols-2 gap-3">
-          <button id="btn-restore" class="w-full bg-white/5 text-white font-bold uppercase tracking-widest py-3 text-xs border border-white/10 hover:border-white/30 hover:bg-white/10 transition-all">Restore Selected</button>
-          <button id="btn-rename" class="w-full border border-white/10 text-gray-300 bg-white/5 uppercase tracking-widest py-3 text-xs hover:bg-white/10 hover:border-white/20 transition-all">Rename</button>
-          <button id="btn-pin" class="w-full border border-white/10 text-gray-300 bg-white/5 uppercase tracking-widest py-3 text-xs hover:bg-white/10 hover:border-white/20 transition-all">Toggle Pin</button>
-          <button id="btn-delete" class="w-full bg-red-500/10 text-red-500 border border-red-500/20 uppercase tracking-widest py-3 text-xs hover:bg-red-500/20 hover:border-red-500/50 transition-all">Delete</button>
+          <button id="btn-restore" class="w-full bg-white/5 text-white font-bold uppercase tracking-widest py-3 text-xs border border-white/10 hover:border-white/30 hover:bg-white/10 transition-all" data-i18n="bkp_restore">Restore Selected</button>
+          <button id="btn-rename" class="w-full border border-white/10 text-gray-300 bg-white/5 uppercase tracking-widest py-3 text-xs hover:bg-white/10 hover:border-white/20 transition-all" data-i18n="bkp_rename">Rename</button>
+          <button id="btn-pin" class="w-full border border-white/10 text-gray-300 bg-white/5 uppercase tracking-widest py-3 text-xs hover:bg-white/10 hover:border-white/20 transition-all" data-i18n="bkp_toggle_pin">Toggle Pin</button>
+          <button id="btn-delete" class="w-full bg-red-500/10 text-red-500 border border-red-500/20 uppercase tracking-widest py-3 text-xs hover:bg-red-500/20 hover:border-red-500/50 transition-all" data-i18n="bkp_delete">Delete</button>
         </div>
       </div>
     </div>
@@ -197,8 +197,8 @@
        <div class="w-16 h-16 border-2 border-[#bfa571]/30 rounded-full flex items-center justify-center mb-6">
          <div class="w-8 h-8 bg-[#bfa571]/20 rotate-45"></div>
        </div>
-       <h3 class="fantasy-font text-xl tracking-[0.3em] uppercase mb-2">Awaiting Selection</h3>
-       <p class="text-xs tracking-widest uppercase">Select an archive from the left to manage</p>
+       <h3 class="fantasy-font text-xl tracking-[0.3em] uppercase mb-2" data-i18n="bkp_awaiting">Awaiting Selection</h3>
+       <p class="text-xs tracking-widest uppercase" data-i18n="bkp_awaiting_desc">Select an archive from the left to manage</p>
     </div>
   </div>
 </div>
@@ -208,13 +208,13 @@
   <div class="bg-[#111] border border-white/10 shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col rounded-md overflow-hidden">
     <!-- Header -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-white/5 shrink-0 bg-black/40">
-      <h3 class="text-sm fantasy-font text-[#bfa571] tracking-[0.2em] uppercase">Select Folder</h3>
+      <h3 class="text-sm fantasy-font text-[#bfa571] tracking-[0.2em] uppercase" data-i18n="bkp_select_folder">Select Folder</h3>
       <button id="file-picker-close" class="text-gray-500 hover:text-white transition-colors">✕</button>
     </div>
     
     <!-- Address Bar Area -->
     <div class="flex items-center gap-3 px-4 py-3 border-b border-white/5 shrink-0 bg-white/[0.02]">
-      <button id="file-picker-up" class="px-3 py-1.5 bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all rounded-sm flex items-center justify-center">
+      <button id="file-picker-up" class="px-3 py-1.5 bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all rounded-sm flex items-center justify-center" data-i18n="bkp_up">
         ↑ Up
       </button>
       <input type="text" id="file-picker-path" class="flex-1 bg-black/50 border border-white/10 rounded-sm px-4 py-1.5 text-sm text-gray-200 outline-none focus:border-[#bfa571]/50 font-mono text-xs" readonly />
@@ -224,7 +224,7 @@
     <div class="flex-1 flex min-h-0">
       <!-- Sidebar (Drives) -->
       <div class="w-48 border-r border-white/5 bg-black/20 p-4 flex flex-col gap-2 overflow-y-auto custom-scrollbar shrink-0" id="file-picker-drives">
-        <h4 class="text-[10px] fantasy-font text-gray-500 tracking-widest uppercase mb-2">Drives</h4>
+        <h4 class="text-[10px] fantasy-font text-gray-500 tracking-widest uppercase mb-2" data-i18n="bkp_drives">Drives</h4>
         <!-- Populated by JS -->
       </div>
       
@@ -243,8 +243,8 @@
     <div class="px-6 py-4 border-t border-white/5 shrink-0 bg-black/40 flex justify-between items-center">
       <div class="text-[10px] text-gray-500 tracking-widest uppercase font-mono" id="file-picker-status"></div>
       <div class="flex gap-3">
-        <button id="file-picker-cancel" class="px-6 py-2 border border-white/10 text-gray-300 bg-white/5 uppercase tracking-widest text-xs hover:bg-white/10 hover:border-white/20 transition-all rounded-sm">Cancel</button>
-        <button id="file-picker-select" class="px-6 py-2 bg-[#bfa571] text-black font-bold uppercase tracking-widest text-xs border border-[#bfa571] hover:brightness-110 shadow-[0_0_15px_rgba(191,165,113,0.3)] transition-all rounded-sm">Select Folder</button>
+        <button id="file-picker-cancel" class="px-6 py-2 border border-white/10 text-gray-300 bg-white/5 uppercase tracking-widest text-xs hover:bg-white/10 hover:border-white/20 transition-all rounded-sm" data-i18n="build_cancel">Cancel</button>
+        <button id="file-picker-select" class="px-6 py-2 bg-[#bfa571] text-black font-bold uppercase tracking-widest text-xs border border-[#bfa571] hover:brightness-110 shadow-[0_0_15px_rgba(191,165,113,0.3)] transition-all rounded-sm" data-i18n="bkp_select_folder">Select Folder</button>
       </div>
     </div>
   </div>

@@ -158,7 +158,11 @@ class ItemAssetService:
             mimetype = "image/webp" if suffix == "webp" else f"image/{suffix}"
             return data, mimetype
 
-    def _load_csv(self, csv_name: str, language: str = "en") -> dict[int, ItemRow]:
+    def _load_csv(self, csv_name: str, language: str | None = None) -> dict[int, ItemRow]:
+        if language is None:
+            from backend.utils.config import read_language
+
+            language = read_language()
         return _load_csv(self.items_dir() / csv_name, language)
 
     def get_distinct_categories(self, csv_name: str, column: str) -> list[str]:
@@ -176,7 +180,9 @@ class ItemAssetService:
             return [category for category in categories if category.lower() not in ("arrow", "bolt")]
         return categories
 
-    def find_item_any_csv(self, item_id: int, hints: list[str] | None = None, language: str = "en") -> ItemRow | None:
+    def find_item_any_csv(
+        self, item_id: int, hints: list[str] | None = None, language: str | None = None
+    ) -> ItemRow | None:
         if item_id in SENTINEL_IDS:
             return None
 
@@ -225,7 +231,7 @@ class ItemAssetService:
 
         return item
 
-    def enrich_weapon(self, item_id: int, language: str = "en") -> dict | None:
+    def enrich_weapon(self, item_id: int, language: str | None = None) -> dict | None:
         table = self._load_csv("EquipParamWeapon.csv", language)
         raw_id = item_id & 0x0FFFFFFF
         found_id = next((candidate for candidate in _candidate_ids(raw_id) if candidate in table), None)
@@ -240,7 +246,7 @@ class ItemAssetService:
         grouped = group_weapon_variants([row for row in rows if row is not None])
         return grouped[0] if grouped else item_to_dict(target)
 
-    def enrich_goods(self, item_id: int, language: str = "en") -> dict | None:
+    def enrich_goods(self, item_id: int, language: str | None = None) -> dict | None:
         table = self._load_csv("EquipParamGoods.csv", language)
         raw_id = item_id & 0x0FFFFFFF
         if raw_id not in table:

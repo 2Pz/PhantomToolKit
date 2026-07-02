@@ -39,11 +39,11 @@ function updateStats() {
             });
             recentTbody.innerHTML = recentHtml;
           } else {
-            recentTbody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">No recent players tracked yet.</td></tr>';
+            recentTbody.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500 py-4">${window.t('main_no_recent_players', 'No recent players tracked yet.')}</td></tr>`;
           }
 
           if (data.loaded && data.players && data.players.length > 0) {
-            statusEl.innerText = 'Game Connected';
+            statusEl.innerText = window.t('main_game_connected', 'Game Connected');
             statusEl.style.color = '#bfa571';
 
             let html = '';
@@ -55,7 +55,7 @@ function updateStats() {
 
               if (p.is_local) {
                 rowClass = 'player-row-current';
-                roleBadge = '<span class="ml-2 text-[9px] bg-blue-900/50 text-blue-200 px-1.5 py-0.5 rounded border border-blue-700">LOCAL</span>';
+                roleBadge = `<span class="ml-2 text-[9px] bg-blue-900/50 text-blue-200 px-1.5 py-0.5 rounded border border-blue-700">${window.t('main_local', 'LOCAL')}</span>`;
               }
 
               html += `
@@ -86,15 +86,15 @@ function updateStats() {
             });
             tbody.innerHTML = html;
           } else {
-            statusEl.innerText = 'Main Menu / Not Loaded';
+            statusEl.innerText = window.t('main_menu_not_loaded', 'Main Menu / Not Loaded');
             statusEl.style.color = '#ff9800';
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">Waiting for game load...</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500 py-4">${window.t('build_waiting', 'Waiting for game load...')}</td></tr>`;
           }
         })
         .catch(err => {
           console.error("Poll error:", err);
           const statusEl = document.getElementById('status-text');
-          statusEl.innerText = 'Server Offline (' + err.message + ')';
+          statusEl.innerText = window.t('main_server_offline', 'Server Offline') + ' (' + err.message + ')';
           statusEl.style.color = '#f44336';
         });
     }
@@ -105,7 +105,7 @@ function postAction(type) {
         .then(data => {
           if(data.message) {
             // Optional: show a nice toast, but for now just alert
-            console.log(data.message);
+            window.showSystemMessage(window.t(data.message, data.message));
           }
           updateStats();
         })

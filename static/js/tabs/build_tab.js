@@ -138,7 +138,7 @@ function updateBuild(force) {
           if (activeTab !== 'build') return;
           const connection = document.getElementById('build-connection');
           if (!data.loaded) {
-            connection.innerText = data.message || 'Waiting for game load...';
+            connection.innerText = data.message || window.t('build_waiting', 'Waiting for game load...');
             renderStatusPanel();
             renderEquipmentGrid();
             return;
@@ -168,38 +168,38 @@ function renderStatusPanel() {
       const name = localStatus.name || 'Unknown';
       const title = inspectingName || name || '2Pz';
       document.getElementById('build-player-name').innerText = title;
-      document.querySelector('#build-tab h2.text-center').innerText = isInspectingBuild() ? `${title}'s Build` : 'Equipment';
-      document.getElementById('build-primary-action').innerText = isInspectingBuild() ? 'Copy Build' : 'Apply Build';
+      document.querySelector('#build-tab h2.text-center').innerText = isInspectingBuild() ? `${title}'s Build` : (locales['build_equipment'] || 'Equipment');
+      document.getElementById('build-primary-action').innerText = isInspectingBuild() ? (locales['build_copy'] || 'Copy Build') : (locales['build_apply'] || 'Apply Build');
       document.getElementById('copy-build-btn').classList.toggle('hidden', !isInspectingBuild());
       const rows = attributes.map(attr => `
         <label class="flex justify-between items-center pr-2">
-          <span class="text-base text-gray-200 Cormorant font-semibold tracking-wide">${labelFor(attr)}</span>
+          <span class="text-base text-gray-200 Cormorant font-semibold tracking-wide" data-i18n="stat_${attr}">${labelFor(attr)}</span>
           ${renderSpinbox(attr, localStatus[attr], 'text-gray-100', 'w-10')}
         </label>
       `).join('');
       panel.innerHTML = `
         <div class="mb-8">
-          <h3 class="text-xs fantasy-font text-[#bfa571] uppercase tracking-[0.25em] mb-4 flex items-center gap-3 border-b border-[#bfa571]/20 pb-2">Identity</h3>
+          <h3 class="text-xs fantasy-font text-[#bfa571] uppercase tracking-[0.25em] mb-4 flex items-center gap-3 border-b border-[#bfa571]/20 pb-2" data-i18n="build_identity">Identity</h3>
           <div class="status-line flex flex-col gap-2">
             <div class="flex justify-between items-center pr-2 mb-1 pb-2 border-b border-white/5">
-              <span class="text-xs fantasy-font text-gray-400 uppercase tracking-widest">Auto-Calculator</span>
-              <button onclick="toggleAutoCalc()" class="px-3 py-1 text-[10px] fantasy-font tracking-widest uppercase transition-all border shadow-sm ${autoCalcLevel ? 'bg-[#bfa571] text-black border-[#bfa571] font-bold hover:brightness-110' : 'bg-transparent text-gray-500 border-white/10 hover:border-white/30 hover:text-gray-300'}">
+              <span class="text-xs fantasy-font text-gray-400 uppercase tracking-widest" data-i18n="build_auto_calc">Auto-Calculator</span>
+              <button onclick="toggleAutoCalc()" class="px-3 py-1 text-[10px] fantasy-font tracking-widest uppercase transition-all border shadow-sm ${autoCalcLevel ? 'bg-[#bfa571] text-black border-[#bfa571] font-bold hover:brightness-110' : 'bg-transparent text-gray-500 border-white/10 hover:border-white/30 hover:text-gray-300'}" data-i18n="${autoCalcLevel ? 'build_active' : 'build_manual'}">
                 ${autoCalcLevel ? 'Active' : 'Manual'}
               </button>
             </div>
             <div class="flex justify-between items-center pr-2">
-              <span class="text-xs fantasy-font text-gray-400 uppercase tracking-widest">Level</span>
+              <span class="text-xs fantasy-font text-gray-400 uppercase tracking-widest" data-i18n="build_level">Level</span>
               ${renderSpinbox('level', localStatus.level, 'text-gray-100', 'w-14', autoCalcLevel)}
             </div>
             <div class="flex justify-between items-center pr-2">
-              <span class="text-xs fantasy-font text-gray-400 uppercase tracking-widest">Journey</span>
+              <span class="text-xs fantasy-font text-gray-400 uppercase tracking-widest" data-i18n="build_journey">Journey</span>
               ${renderSpinbox('journey', localStatus.journey != null ? localStatus.journey : 1, 'text-gray-100', 'w-10')}
             </div>
           </div>
         </div>
 
         <div class="mb-8">
-          <h3 class="text-xs fantasy-font text-[#bfa571] uppercase tracking-[0.25em] mb-4 flex items-center gap-3 border-b border-[#bfa571]/20 pb-2">Growth</h3>
+          <h3 class="text-xs fantasy-font text-[#bfa571] uppercase tracking-[0.25em] mb-4 flex items-center gap-3 border-b border-[#bfa571]/20 pb-2" data-i18n="build_growth">Growth</h3>
           <div class="status-line flex flex-col gap-2">
             ${statusRow('runes', 'Runes')}
             ${statusRow('scadutree_blessing', 'Scadutree Blessing')}
@@ -208,16 +208,17 @@ function renderStatusPanel() {
         </div>
 
         <div class="flex-1 pb-10">
-          <h3 class="text-xs fantasy-font text-[#bfa571] uppercase tracking-[0.25em] mb-4 flex items-center gap-3 border-b border-[#bfa571]/20 pb-2">Attributes</h3>
+          <h3 class="text-xs fantasy-font text-[#bfa571] uppercase tracking-[0.25em] mb-4 flex items-center gap-3 border-b border-[#bfa571]/20 pb-2" data-i18n="build_attributes">Attributes</h3>
           <div class="status-line flex flex-col gap-2">${rows}</div>
         </div>
       `;
+      if (typeof translateUI === 'function') translateUI();
     }
 
 function statusRow(key, label, golden) {
       return `
         <label class="flex justify-between items-center pr-2">
-          <span class="text-xs fantasy-font text-gray-400 uppercase tracking-widest">${label}</span>
+          <span class="text-xs fantasy-font text-gray-400 uppercase tracking-widest" data-i18n="stat_${key}">${label}</span>
           ${renderSpinbox(key, localStatus[key], golden ? 'text-[#bfa571]' : 'text-gray-100', 'w-16')}
         </label>
       `;
@@ -539,10 +540,10 @@ function renderConfigPanel() {
           <div class="flex gap-4">
             <div class="w-20 h-20 soulslike-slot item-glow flex items-center justify-center shrink-0 active"></div>
             <div class="flex-1">
-              <h4 class="fantasy-font text-gray-100 uppercase text-base leading-tight">Select Slot</h4>
+              <h4 class="fantasy-font text-gray-100 uppercase text-base leading-tight">${window.t('build_select_slot_title', 'Select Slot')}</h4>
               <div class="flex justify-between items-center mt-2 border-b border-white/5 pb-1">
-                <span class="text-[10px] text-gray-500 uppercase tracking-widest">Status</span>
-                <span class="text-xs text-[#bfa571] font-bold">Ready</span>
+                <span class="text-[10px] text-gray-500 uppercase tracking-widest">${window.t('build_status', 'Status')}</span>
+                <span class="text-xs text-[#bfa571] font-bold">${window.t('build_ready', 'Ready')}</span>
               </div>
             </div>
           </div>
@@ -556,10 +557,10 @@ function renderConfigPanel() {
             <div class="flex-1">
               <h4 class="fantasy-font text-gray-100 uppercase text-base leading-tight">${slotLabel(selectedSlot)}</h4>
               <div class="flex justify-between items-center mt-2 border-b border-white/5 pb-1">
-                <span class="text-[10px] text-gray-500 uppercase tracking-widest">ID</span>
+                <span class="text-[10px] text-gray-500 uppercase tracking-widest">${window.t('build_id', 'ID')}</span>
                 <span class="text-xs text-[#bfa571] font-bold">--</span>
               </div>
-              <p class="text-xs text-gray-500 mt-3">No item equipped. Use search below to choose one.</p>
+              <p class="text-xs text-gray-500 mt-3">${window.t('build_no_equip', 'No item equipped. Use search below to choose one.')}</p>
             </div>
           </div>
         `;
@@ -568,11 +569,11 @@ function renderConfigPanel() {
 
       const pendingActions = pendingItem ? `
         <div class="grid grid-cols-2 gap-2 mt-3">
-          <button class="py-2 bg-[#bfa571] text-black fantasy-font uppercase tracking-widest text-xs font-bold hover:brightness-110" onclick="confirmPendingItem()">Confirm & Equip</button>
-          <button class="py-2 bg-white/10 text-gray-300 fantasy-font uppercase tracking-widest text-xs font-bold hover:bg-white/20" onclick="pendingItem=null; renderConfigPanel()">Dismiss</button>
+          <button class="py-2 bg-[#bfa571] text-black fantasy-font uppercase tracking-widest text-xs font-bold hover:brightness-110" onclick="confirmPendingItem()">${window.t('build_confirm', 'Confirm & Equip')}</button>
+          <button class="py-2 bg-white/10 text-gray-300 fantasy-font uppercase tracking-widest text-xs font-bold hover:bg-white/20" onclick="pendingItem=null; renderConfigPanel()">${window.t('build_dismiss', 'Dismiss')}</button>
         </div>
       ` : `
-        <button class="w-full mt-4 py-2 bg-white/5 border border-white/10 text-gray-300 fantasy-font uppercase tracking-widest text-xs font-bold hover:bg-white/10 hover:text-[#bfa571] hover:border-[#bfa571]/50 transition-all" onclick="customizeCurrentItem()">Customize Weapon</button>
+        <button class="w-full mt-4 py-2 bg-white/5 border border-white/10 text-gray-300 fantasy-font uppercase tracking-widest text-xs font-bold hover:bg-white/10 hover:text-[#bfa571] hover:border-[#bfa571]/50 transition-all" onclick="customizeCurrentItem()">${window.t('build_customize', 'Customize Weapon')}</button>
       `;
 
       panel.innerHTML = `
@@ -584,16 +585,16 @@ function renderConfigPanel() {
             <div class="flex-1">
               <h4 class="fantasy-font text-gray-100 uppercase text-base leading-tight">${escapeHtml(item.name || 'Unknown')} ${item.upgrade && !String(item.name || '').includes('+') ? '+' + item.upgrade : ''}</h4>
               <div class="flex justify-between items-center mt-2 border-b border-white/5 pb-1">
-                <span class="text-[10px] text-gray-500 uppercase tracking-widest">ID</span>
+                <span class="text-[10px] text-gray-500 uppercase tracking-widest">${window.t('build_id', 'ID')}</span>
                 <span class="text-xs text-[#bfa571] font-bold">${item.id || '--'}</span>
               </div>
               <div class="flex justify-between items-center border-b border-white/5 pb-1">
-                <span class="text-[10px] text-gray-500 uppercase tracking-widest">Category</span>
+                <span class="text-[10px] text-gray-500 uppercase tracking-widest">${window.t('build_category', 'Category')}</span>
                 <span class="text-xs text-[#bfa571] font-bold">${escapeHtml(item.category || '--')}</span>
               </div>
               ${item.ash_of_war && item.ash_of_war !== -1 ? `
               <div class="flex justify-between items-center border-b border-white/5 pb-1">
-                <span class="text-[10px] text-gray-500 uppercase tracking-widest">Ash of War</span>
+                <span class="text-[10px] text-gray-500 uppercase tracking-widest">${window.t('build_aow', 'Ash of War')}</span>
                 <span class="text-xs text-[#bfa571] font-bold">${escapeHtml(item.ash_of_war_name || item.ash_of_war)}</span>
               </div>
               ` : ''}
@@ -651,17 +652,17 @@ function renderWeaponConfig(item) {
       return `
         ${variants}
         <label class="block text-xs uppercase tracking-wider text-gray-500 mt-3">
-          Upgrade +${item.upgrade || 0}
+          ${window.t('build_upgrade', 'Upgrade +')}${item.upgrade || 0}
           <input class="w-full accent-[#bfa571] mt-2" type="range" min="0" max="${item.max_upgrade}" value="${item.upgrade || 0}" oninput="markBuildEditing(); pendingItem.upgrade=Number(this.value); renderConfigPanel()">
         </label>
         <div class="mt-3">
           <div class="flex items-center justify-between text-xs uppercase tracking-wider text-gray-500 mb-1">
-            <span>Ash of War</span>
-            <button class="text-[#bfa571]" onclick="markBuildEditing(); pendingItem.ash_of_war=-1; delete pendingItem.ash_of_war_name; renderConfigPanel()">None</button>
+            <span>${window.t('build_aow', 'Ash of War')}</span>
+            <button class="text-[#bfa571]" onclick="markBuildEditing(); pendingItem.ash_of_war=-1; delete pendingItem.ash_of_war_name; renderConfigPanel()">${window.t('build_none', 'None')}</button>
           </div>
           <input id="ash-search" class="build-input" placeholder="Search ashes..." value="${escapeAttr(ashQuery)}" oninput="queueAshSearch()">
           <div id="ash-results" class="grid grid-cols-4 gap-2 mt-2 max-h-48 overflow-y-auto custom-scrollbar">${renderAshResults()}</div>
-          <div class="text-[10px] text-gray-500 mt-1">Selected: ${item.ash_of_war && item.ash_of_war !== -1 ? escapeHtml(item.ash_of_war_name || item.ash_of_war) : 'None'}</div>
+          <div class="text-[10px] text-gray-500 mt-1">${window.t('build_selected', 'Selected:')} ${item.ash_of_war && item.ash_of_war !== -1 ? escapeHtml(item.ash_of_war_name || item.ash_of_war) : 'None'}</div>
         </div>
       `;
     }
@@ -709,7 +710,7 @@ function renderSpiritConfig(item) {
       if (!item || !item.category || !item.category.toLowerCase().includes('spirit summon') || !item.variants) return '';
       return `
         <label class="block text-xs uppercase tracking-wider text-gray-500 mt-3">
-          Spirit Upgrade
+          ${window.t('build_spirit_upg', 'Spirit Upgrade')}
           <select class="build-input mt-1" onchange="markBuildEditing(); pendingItem.id=Number(this.value); pendingItem.name=this.options[this.selectedIndex].text; renderConfigPanel()">
             <option value="${item.base_id || item.id}">${escapeHtml(item.base_name || item.name)}</option>
             ${item.variants.map(v => `<option value="${v.id}" ${v.id === item.id ? 'selected' : ''}>${escapeHtml(v.name)}</option>`).join('')}
@@ -724,7 +725,7 @@ function renderQuantityConfig(item) {
       const current = item.count != null ? item.count : (isAmmoSlot(selectedSlot) ? 99 : 1);
       return `
         <label class="block text-xs uppercase tracking-wider text-gray-500 mt-3">
-          Quantity ${item.count == null && isQuickSlot(selectedSlot) ? 'KEEP' : current}
+          ${window.t('build_quantity', 'Quantity')} ${item.count == null && isQuickSlot(selectedSlot) ? window.t('build_keep', 'KEEP') : current}
           <input class="w-full accent-[#bfa571] mt-2" type="range" min="1" max="${max}" value="${current}" oninput="markBuildEditing(); pendingItem.count=Number(this.value); renderConfigPanel()">
         </label>
       `;

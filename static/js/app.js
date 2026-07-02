@@ -1,4 +1,125 @@
 let activeTab = 'main';
+    let locales = {};
+    let currentLang = 'en';
+
+    window.t = function(key, fallback) {
+        if (locales && locales[key]) return locales[key];
+        return fallback || key;
+    };
+
+    window.showSystemMessage = function(msg, isError = false) {
+      const toast = document.getElementById('system-message-toast');
+      const text = document.getElementById('system-message-text');
+      if (!toast || !text) return;
+      
+      text.innerText = msg;
+      if (isError) {
+        toast.classList.replace('border-[#bfa571]/50', 'border-red-500/50');
+        toast.classList.replace('text-[#bfa571]', 'text-red-400');
+      } else {
+        toast.classList.replace('border-red-500/50', 'border-[#bfa571]/50');
+        toast.classList.replace('text-red-400', 'text-[#bfa571]');
+      }
+      
+      toast.classList.remove('opacity-0', '-translate-y-4');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      
+      if (window.sysMsgTimeout) clearTimeout(window.sysMsgTimeout);
+      window.sysMsgTimeout = setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', '-translate-y-4');
+      }, 3000);
+    };
+
+    function loadLanguageData() {
+      fetch('/api/settings/language')
+        .then(r => r.json())
+        .then(data => {
+          currentLang = data.language || 'en';
+          fetchLocalesList();
+        })
+        .catch(() => {
+          fetchLocalesList();
+        });
+    }
+
+    function fetchLocalesList() {
+      fetch('/api/locales')
+        .then(r => r.json())
+        .then(data => {
+          const select = document.getElementById('language-select');
+          if (select) {
+            select.innerHTML = '';
+            data.locales.forEach(l => {
+              const opt = document.createElement('option');
+              const code = l.code || l;
+              const name = l.name || (typeof l === 'string' ? l.toUpperCase() : code.toUpperCase());
+              
+              opt.value = code;
+              opt.textContent = name;
+              if (code === currentLang) opt.selected = true;
+              select.appendChild(opt);
+            });
+          }
+          applyLanguage(currentLang);
+        });
+    }
+
+    function applyLanguage(lang) {
+      fetch(`/static/local/${lang}.json`)
+        .then(r => {
+            if(!r.ok) throw new Error('not found');
+            return r.json();
+        })
+        .then(data => {
+          locales = data;
+          translateUI();
+        })
+        .catch(() => {
+           if(lang !== 'en') applyLanguage('en');
+        });
+    }
+
+    function changeLanguage(lang) {
+      currentLang = lang;
+      fetch('/api/settings/language', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: lang })
+      }).then(() => {
+        applyLanguage(lang);
+        if (activeTab === 'build' && typeof updateBuild === 'function') {
+          updateBuild(true);
+        }
+      });
+    }
+
+    function translateUI() {
+      const fontFantasy = locales['app_font_fantasy'] || locales['app_font'] || "'Cinzel', serif";
+      const fontBody = locales['app_font_body'] || locales['app_font'] || "'Inter', sans-serif";
+      
+      document.body.style.fontFamily = fontBody;
+      let styleEl = document.getElementById('dynamic-font-style');
+      if (!styleEl) {
+          styleEl = document.createElement('style');
+          styleEl.id = 'dynamic-font-style';
+          document.head.appendChild(styleEl);
+      }
+      styleEl.innerHTML = `
+          .fantasy-font, h1, h2, h3 { font-family: ${fontFantasy} !important; }
+          body, .inter-font { font-family: ${fontBody} !important; }
+      `;
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (locales[key]) {
+            if(el.tagName === 'INPUT' && el.type === 'button') el.value = locales[key];
+            else if(el.tagName === 'INPUT' && el.type === 'text' && el.placeholder) el.placeholder = locales[key];
+            else el.innerText = locales[key];
+        }
+      });
+    }
+
     let localBuild = { slots: {} };
     let localStatus = {};
     let localAppearance = null;
@@ -602,7 +723,7 @@ let activeTab = 'main';
                   
 
     function saveBuildToServer() {
-      const name = prompt("Enter a name for this build:", localStatus.name || "my-build");
+      const name = prompt(window.t("build_prompt_name", "Enter a name for this build:"), localStatus.name || "my-build");
       if (!name) return;
       const data = {
         equipment: frontendSlotsToBackendEquipment(localBuild.slots || {}),
@@ -620,7 +741,12 @@ let activeTab = 'main';
       })
         .then(res => res.json())
         .then(res => {
-          if (res.message) alert(res.message);
+          if (res.message) {
+            let m = res.message;
+            if (m.startsWith('Saved as ')) m = window.t('sys_saved_as', 'Saved as ') + m.substring(9);
+            else m = window.t(m, m);
+            window.showSystemMessage(m);
+          }
         });
     }
 
@@ -629,7 +755,7 @@ let activeTab = 'main';
         .then(res => res.json())
         .then(data => {
           if (!data.builds || data.builds.length === 0) {
-            alert("No builds found in the builds directory.");
+            window.showSystemMessage(window.t("No builds found in the builds directory.", "No builds found in the builds directory."));
             return;
           }
           const container = document.getElementById('build-list-container');
@@ -646,7 +772,7 @@ let activeTab = 'main';
                 .then(res => res.json())
                 .then(result => {
                     if (!result.success) {
-                      alert(result.message || 'Invalid build file');
+                      window.showSystemMessage(window.t(result.message || 'sys_invalid_build', result.message || 'Invalid build file'), true);
                       return;
                     }
                     localBuild = result.build || { slots: {} };
@@ -798,6 +924,9 @@ let activeTab = 'main';
         req.open('GET', '/error_log/INIT_APP_STARTED', true);
         req.send();
       } catch(e) {}
+      
+      loadLanguageData();
+
       setInterval(updateStats, 1000);
       setInterval(() => updateBuild(false), 1000);
       updateStats();

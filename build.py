@@ -26,6 +26,16 @@ def main():
     shutil.copytree("items", items_dir)
     print("Done! Items copied.")
 
+    print("Copying local folder to dist/static/local...")
+    local_src = os.path.join("static", "local")
+    local_dist = os.path.join("dist", "static", "local")
+    if os.path.exists(local_dist):
+        shutil.rmtree(local_dist)
+    os.makedirs(os.path.dirname(local_dist), exist_ok=True)
+    if os.path.exists(local_src):
+        shutil.copytree(local_src, local_dist)
+    print("Done! Local folder copied.")
+
     print("Copying systemd units to dist/systemd...")
     sd_dir = os.path.join("dist", "systemd")
     if os.path.exists(sd_dir):

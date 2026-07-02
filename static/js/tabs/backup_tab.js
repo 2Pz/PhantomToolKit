@@ -271,7 +271,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 autoBackupDot.classList.add('animate-pulse');
                 autoBackupText.classList.replace('text-red-400', 'text-emerald-400');
                 autoBackupText.textContent = 'Auto-Backup Active';
+                autoBackupText.setAttribute('data-i18n', 'bkp_auto_active');
                 toggleAutoBtn.textContent = 'Stop Auto';
+                toggleAutoBtn.setAttribute('data-i18n', 'bkp_stop_auto');
             } else {
                 autoBackupIndicator.classList.replace('bg-emerald-500/10', 'bg-red-500/10');
                 autoBackupIndicator.classList.replace('border-emerald-500/30', 'border-red-500/30');
@@ -279,8 +281,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 autoBackupDot.classList.remove('animate-pulse');
                 autoBackupText.classList.replace('text-emerald-400', 'text-red-400');
                 autoBackupText.textContent = 'Auto-Backup Inactive';
+                autoBackupText.setAttribute('data-i18n', 'bkp_auto_inactive');
                 toggleAutoBtn.textContent = 'Start Auto';
+                toggleAutoBtn.setAttribute('data-i18n', 'bkp_start_auto');
             }
+            if (typeof translateUI === 'function') translateUI();
         } catch (e) { }
     }
 
@@ -300,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
             div.className = 'flex flex-col';
             let displayVal = settings[kb.id] || 'NONE';
             div.innerHTML = `
-                <label class="text-[10px] text-gray-500 mb-1 uppercase tracking-widest fantasy-font font-bold">${kb.label}</label>
+                <label class="text-[10px] text-gray-500 mb-1 uppercase tracking-widest fantasy-font font-bold" data-i18n="${kb.id}">${kb.label}</label>
                 <div class="flex gap-2">
                     <input type="text" id="kb-input-${kb.id}" readonly value="${displayVal}"
                         class="flex-1 bg-black/40 border border-white/10 rounded-sm px-3 py-2 text-xs text-gray-200 focus:outline-none cursor-pointer fantasy-font tracking-widest transition-all" />
@@ -365,6 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.value = 'NONE';
             };
         });
+        if (typeof translateUI === 'function') translateUI();
     }
 
     // Event Listeners
@@ -608,7 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnRename.onclick = async () => {
         if (!selectedBackup) return;
-        const newName = prompt('New name:', selectedBackup.replace('.zip', '').replace('.sl2', ''));
+        const newName = prompt(window.t('bkp_prompt_new_name', 'New name:'), selectedBackup.replace('.zip', '').replace('.sl2', ''));
         if (!newName || newName === selectedBackup.replace('.zip', '').replace('.sl2', '')) return;
         try {
             await apiCall('/api/backup/rename', {

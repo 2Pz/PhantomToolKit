@@ -10,6 +10,7 @@ from backend.tabs.backup_tab import backup_bp
 from backend.tabs.build_tab import apply_build, get_build_data, inspect_saved_build
 from backend.tabs.inventory_tab import inventory_bp
 from backend.tabs.main_tab import get_player_data, get_recent_build_snapshot, perform_game_action
+from backend.utils.config import read_language, set_language
 from backend.utils.item_catalog import lookup
 from backend.utils.items import ItemAssetService
 
@@ -197,6 +198,63 @@ def toggle_cheat_route():
 
 app.register_blueprint(backup_bp)
 app.register_blueprint(inventory_bp)
+
+
+@app.route("/api/settings/language", methods=["GET"])
+def get_language():
+    return jsonify({"language": read_language()})
+
+
+@app.route("/api/settings/language", methods=["POST"])
+def update_language():
+    data = request.json
+    lang = data.get("language")
+    if lang:
+        set_language(lang)
+        return jsonify({"success": True})
+    return jsonify({"success": False, "message": "No language provided"})
+
+
+@app.route("/api/locales")
+def list_locales():
+    import json
+
+    from backend.utils.config import get_base_dir
+
+    locales_dir = os.path.join(get_base_dir(), "static", "local")
+    if not os.path.exists(locales_dir):
+        return jsonify({"locales": [{"code": "en", "name": "English"}]})
+    locales = []
+    has_en = False
+    for f in os.listdir(locales_dir):
+        if f.endswith(".json"):
+            code = f.replace(".json", "")
+            if code == "en":
+                has_en = True
+            name = code.upper()
+            try:
+                with open(os.path.join(locales_dir, f), encoding="utf-8") as jf:
+                    data = json.load(jf)
+                    name = data.get("app_lang_name", name)
+            except Exception:
+                pass
+            locales.append({"code": code, "name": name})
+    if not has_en:
+        locales.append({"code": "en", "name": "English"})
+
+    # Optional sorting by code
+    locales = sorted(locales, key=lambda x: x["code"])
+    return jsonify({"locales": locales})
+
+
+@app.route("/static/local/<path:filename>")
+def serve_external_local(filename):
+    from flask import send_from_directory
+
+    from backend.utils.config import get_base_dir
+
+    local_dir = os.path.join(get_base_dir(), "static", "local")
+    return send_from_directory(local_dir, filename)
 
 
 if __name__ == "__main__":
