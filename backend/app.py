@@ -81,7 +81,7 @@ def load_build_file(name):
     name = os.path.basename(name)
     file_path = os.path.join(builds_dir, name)
     if not os.path.exists(file_path):
-        return jsonify({"success": False, "message": "File not found"}), 404
+        return jsonify({"success": False, "message": "sys_file_not_found"}), 404
     try:
         with open(file_path, encoding="utf-8") as f:
             data = json.load(f)
@@ -188,7 +188,7 @@ def toggle_cheat_route():
     cheat = data.get("cheat")
     enabled = data.get("enabled")
     if not cheat or enabled is None:
-        return jsonify({"success": False, "message": "Invalid payload"})
+        return jsonify({"success": False, "message": "sys_invalid_payload"})
 
     from backend.tabs.cheats_tab import toggle_cheat
 
@@ -212,7 +212,7 @@ def update_language():
     if lang:
         set_language(lang)
         return jsonify({"success": True})
-    return jsonify({"success": False, "message": "No language provided"})
+    return jsonify({"success": False, "message": "sys_no_language"})
 
 
 @app.route("/api/locales")

@@ -1,55 +1,15 @@
 import builtins
-import configparser
-import os
 import sys
 import threading
 import time
-import tomllib
 
-with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "pyproject.toml"), "rb") as f:
-    mod_name = tomllib.load(f)["project"]["name"]
+from fromsoftware_py import setup_mod
 
+ctx = setup_mod(__file__)
+mod_name = ctx.mod_name
+log = ctx.log
 
-dll_path = globals().get("__dll_path__") or getattr(sys, "fspy_dll_path", None)
-base_dir = os.path.dirname(os.path.abspath(dll_path)) if dll_path else os.path.dirname(os.path.abspath(__file__))
-sys.fspy_base_dir = base_dir
-
-LOG_FILE = os.path.join(base_dir, "logs", f"{mod_name}.log")
-
-
-os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
-
-
-INI_FILE = os.path.join(base_dir, f"{mod_name}.ini")
-
-
-def load_ini():
-    if not os.path.exists(INI_FILE):
-        config = configparser.ConfigParser()
-        config["Settings"] = {"example_setting": "true"}
-        with open(INI_FILE, "w", encoding="utf-8") as f:
-            config.write(f)
-
-    config = configparser.ConfigParser()
-    config.read(INI_FILE, encoding="utf-8")
-    return config
-
-
-config = load_ini()
-
-try:
-    with open(LOG_FILE, "w", encoding="utf-8"):
-        pass
-except Exception:
-    pass
-
-
-def log(msg):
-    try:
-        with open(LOG_FILE, "a", encoding="utf-8") as file:
-            file.write(f"[{mod_name}] {msg}\n")
-    except Exception:
-        pass
+sys.fspy_base_dir = ctx.base_dir
 
 
 class LoggerWriter:

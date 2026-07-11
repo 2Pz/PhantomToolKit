@@ -134,12 +134,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(settings)
             });
-            saveSettingsBtn.textContent = 'Settings Saved';
+            saveSettingsBtn.textContent = window.t('bkp_btn_settings_saved', 'Settings Saved');
             saveSettingsBtn.classList.replace('bg-[#bfa571]', 'bg-emerald-900/40');
             saveSettingsBtn.classList.replace('text-black', 'text-emerald-400');
             saveSettingsBtn.classList.replace('border-[#bfa571]', 'border-emerald-500');
             setTimeout(() => {
-                saveSettingsBtn.textContent = 'Commit Changes';
+                saveSettingsBtn.textContent = window.t('bkp_btn_commit_changes', 'Commit Changes');
                 saveSettingsBtn.classList.replace('bg-emerald-900/40', 'bg-[#bfa571]');
                 saveSettingsBtn.classList.replace('text-emerald-400', 'text-black');
                 saveSettingsBtn.classList.replace('border-emerald-500', 'border-[#bfa571]');
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await fetchSaveFiles(settings.save_directory, '*');
             }
         } catch (e) {
-            showStatus('Failed to save settings');
+            showStatus(window.t('bkp_status_save_failed', 'Failed to save settings'));
         }
     }
 
@@ -396,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshBtn.onclick = loadBackups;
 
     createBackupBtn.onclick = async () => {
-        showStatus('Creating backup...');
+        showStatus(window.t('bkp_status_creating', 'Creating backup...'));
         createBackupBtn.disabled = true;
         try {
             await apiCall('/api/backup/create', {
@@ -404,10 +404,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ requestSave: true })
             });
-            showStatus('Backup created');
+            showStatus(window.t('bkp_status_created', 'Backup created'));
             await loadBackups();
         } catch (e) {
-            showStatus('Failed to create backup');
+            showStatus(window.t('bkp_status_create_failed', 'Failed to create backup'));
         } finally {
             createBackupBtn.disabled = false;
         }
@@ -428,10 +428,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await apiCall('/api/backup/auto-find');
             if (data.paths.length === 0) {
-                showStatus('No save locations found');
+                showStatus(window.t('bkp_status_no_saves_found', 'No save locations found'));
             } else if (data.paths.length === 1) {
                 setSaveDir.value = data.paths[0].path;
-                showStatus(`Found: ${data.paths[0].path}`);
+                showStatus(window.t('bkp_status_found', 'Found: {0}').replace('{0}', data.paths[0].path));
                 await fetchSaveFiles(setSaveDir.value, '*');
             } else {
                 autoFindResults.innerHTML = '';
@@ -449,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 autoFindResults.classList.remove('hidden');
             }
         } catch (e) {
-            showStatus('Auto-find failed');
+            showStatus(window.t('bkp_status_autofind_failed', 'Auto-find failed'));
         }
     };
 
@@ -572,30 +572,32 @@ document.addEventListener('DOMContentLoaded', () => {
     btnRestore.onclick = async () => {
         if (!selectedBackup) return;
         const msg = settings.quit_to_menu_before_load 
-            ? "Safe Load Active: This will return you to the Main Menu and restore." 
-            : "WARNING: You should be in the Main Menu before loading a save!";
-        if (!confirm(`${msg}\n\nRestore "${selectedBackup}" now?`)) return;
+            ? window.t('bkp_msg_safe_load', "Safe Load Active: This will return you to the Main Menu and restore.") 
+            : window.t('bkp_msg_unsafe_load', "WARNING: You should be in the Main Menu before loading a save!");
+        const confirmText = window.t('bkp_confirm_restore', 'Restore "{0}" now?').replace('{0}', selectedBackup);
+        if (!confirm(`${msg}\n\n${confirmText}`)) return;
         
-        showStatus('Restoring...');
+        showStatus(window.t('bkp_status_restoring', 'Restoring...'));
         try {
             await apiCall(`/api/backup/load?name=${encodeURIComponent(selectedBackup)}`, { method: 'POST' });
-            showStatus(`Restored: ${selectedBackup}`);
+            showStatus(window.t('bkp_status_restored', 'Restored: {0}').replace('{0}', selectedBackup));
         } catch (e) {
-            showStatus('Restore failed');
+            showStatus(window.t('bkp_status_restore_failed', 'Restore failed'));
         }
     };
 
     btnDelete.onclick = async () => {
         if (!selectedBackup) return;
-        if (!confirm(`Are you sure you want to delete "${selectedBackup}"?`)) return;
+        const confirmDelText = window.t('bkp_confirm_delete', 'Are you sure you want to delete "{0}"?').replace('{0}', selectedBackup);
+        if (!confirm(confirmDelText)) return;
         try {
             await apiCall(`/api/backup/${encodeURIComponent(selectedBackup)}`, { method: 'DELETE' });
             selectedBackup = null;
-            showStatus('Deleted archive');
+            showStatus(window.t('bkp_status_deleted', 'Deleted archive'));
             await loadBackups();
             updateSelectedView();
         } catch (e) {
-            showStatus('Delete failed');
+            showStatus(window.t('bkp_status_delete_failed', 'Delete failed'));
         }
     };
 
@@ -626,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await loadBackups();
             updateSelectedView();
         } catch (e) {
-            showStatus('Rename failed');
+            showStatus(window.t('bkp_status_rename_failed', 'Rename failed'));
         }
     };
 

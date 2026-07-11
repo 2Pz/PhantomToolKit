@@ -4,13 +4,12 @@ converts between backend (build.json / fspy) and frontend (dashboard) formats,
 and applies builds back into the game.
 """
 
+# ─── Sentinel / empty values ───────────────────────────────────────────────────
 import contextlib
 
 import fspy
 
 from backend.utils.items import ItemAssetService
-
-# ─── Sentinel / empty values ───────────────────────────────────────────────────
 
 SENTINEL_IDS = frozenset((-1, 0, 0xFFFFFFFF, 0x0FFFFFFF))
 ATTRIBUTES = ("vigor", "mind", "endurance", "strength", "dexterity", "intelligence", "faith", "arcane")
@@ -534,7 +533,7 @@ def _handle_build_error(e):
 
     traceback.print_exc()
     if "not initialized" in str(e):
-        return {"loaded": False, "message": "Game not loaded."}
+        return {"loaded": False, "message": "sys_game_not_loaded"}
     return {"loaded": False, "message": str(e)}
 
 
@@ -571,7 +570,7 @@ def get_build_data(steam_id=None, player_index=None):
             pgd = _find_main_player()
 
         if pgd is None:
-            return {"loaded": False, "message": "Player not found or game not loaded."}
+            return {"loaded": False, "message": "sys_game_player_not_found"}
 
         stats, slots, appearance = _read_full_player_data(pgd)
 
@@ -585,7 +584,7 @@ def get_build_data(steam_id=None, player_index=None):
         return _handle_build_error(e)
 
 
-def apply_build(payload: dict):
+def apply_build(payload: dict) -> dict:
     """
     Apply a build to the local player via fspy.apply_build.
     payload comes from the dashboard: {slots: {...}, status: {...} | null}
@@ -595,7 +594,7 @@ def apply_build(payload: dict):
     try:
         pgd = _find_main_player()
         if pgd is None:
-            return {"loaded": False, "message": "Player not found or game not loaded."}
+            return {"loaded": False, "message": "sys_game_player_not_found"}
 
         status = payload.get("status")
         equipment = None
@@ -657,7 +656,7 @@ def apply_build(payload: dict):
                 "message": msg,
             }
 
-        return {"loaded": True, "message": "Build applied." if ok else "Build applied with errors."}
+        return {"loaded": True, "message": "sys_build_applied" if ok else "sys_build_applied_errors"}
     except Exception as e:
         return _handle_build_error(e)
 
@@ -672,7 +671,7 @@ def inspect_saved_build(payload: dict):
     try:
         equipment = payload.get("equipment", {})
         if not equipment or not isinstance(equipment, dict):
-            return {"success": False, "message": "Invalid build file: missing equipment."}
+            return {"success": False, "message": "sys_invalid_build_equip"}
 
         # Convert backend equipment to frontend slots
         slots = _backend_equipment_to_frontend_slots(equipment)

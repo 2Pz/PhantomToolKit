@@ -13,6 +13,7 @@ let activeTab = 'main';
       if (!toast || !text) return;
       
       text.innerText = msg;
+      text.setAttribute('dir', 'auto');
       if (isError) {
         toast.classList.replace('border-[#bfa571]/50', 'border-red-500/50');
         toast.classList.replace('text-[#bfa571]', 'text-red-400');
@@ -66,7 +67,7 @@ let activeTab = 'main';
     }
 
     function applyLanguage(lang) {
-      fetch(`/static/local/${lang}.json`)
+      fetch(`/static/local/${lang}.json?v=${new Date().getTime()}`)
         .then(r => {
             if(!r.ok) throw new Error('not found');
             return r.json();
@@ -115,7 +116,10 @@ let activeTab = 'main';
         if (locales[key]) {
             if(el.tagName === 'INPUT' && el.type === 'button') el.value = locales[key];
             else if(el.tagName === 'INPUT' && el.type === 'text' && el.placeholder) el.placeholder = locales[key];
-            else el.innerText = locales[key];
+            else {
+                el.innerText = locales[key];
+                el.setAttribute('dir', 'auto');
+            }
         }
       });
     }

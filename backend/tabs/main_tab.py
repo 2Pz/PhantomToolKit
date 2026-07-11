@@ -12,7 +12,7 @@ _recent_build_snapshots = {}
 def get_recent_build_snapshot(steam_id: int):
     snapshot = _recent_build_snapshots.get(int(steam_id))
     if not snapshot:
-        return {"loaded": False, "message": "No cached build snapshot for this recent player."}
+        return {"loaded": False, "message": "sys_no_cached_build"}
     return {"loaded": True, "readonly": True, **snapshot}
 
 
@@ -185,46 +185,10 @@ def perform_game_action(action_type):
     try:
         if action_type == "fix_infinite_loading":
             try:
-                import time
-
-                #    Write grace ID warp target to GameMan before warping
-                try:
-                    gm = fspy.PyGameMan.get_instance()
-                    if gm and not gm.is_null:
-                        warp_bytes = list((11102950).to_bytes(4, "little"))
-                        fspy.patch_memory(gm.address + 0xB60, warp_bytes)
-                except Exception:
-                    pass
-
-                # Safety check: not in multiplayer
-                try:
-                    wcm = fspy.PyWorldChrMan.get_instance()
-                    if wcm and not wcm.is_null:
-                        chr_set = getattr(wcm, "player_chr_set", None)
-                        if chr_set and not chr_set.is_null:
-                            players = chr_set.characters()
-                            if len(players) > 1:
-                                return {"success": False, "message": "Cannot warp while in multiplayer."}
-                except Exception:
-                    pass
-
-                # Warp with retry (up to 5 seconds)
-                warped = False
-                end_time = time.time() + 5.0
-                while time.time() < end_time and not warped:
-                    try:
-                        if fspy.trigger_lua_warp(11102950):
-                            warped = True
-                            break
-                    except Exception:
-                        pass
-                    time.sleep(0.5)
-
+                result = fspy.fix_loading_screen()
                 return {
-                    "success": warped,
-                    "message": "Warping to Roundtable Hold to fix infinite loading."
-                    if warped
-                    else "Failed to warp after multiple attempts.",
+                    "success": result,
+                    "message": "sys_loading_fix" if result else "sys_loading_fix_failed",
                 }
             except Exception as e:
                 return {"success": False, "message": f"Warp error: {e}"}
@@ -233,21 +197,21 @@ def perform_game_action(action_type):
             try:
                 gm = fspy.PyGameMan.get_instance()
                 if gm is None or gm.is_null:
-                    return {"success": False, "message": "GameMan not found."}
+                    return {"success": False, "message": "sys_gameman_not_found"}
                 gm.unk8 = 1
                 gm.warp_requested = True
                 gm.save_requested = True
-                return {"success": True, "message": "Quit to menu triggered."}
+                return {"success": True, "message": "sys_quit_menu"}
             except Exception as e:
                 return {"success": False, "message": f"Quit error: {e}"}
 
         world_chr_man = fspy.PyWorldChrMan.get_instance()
         if world_chr_man.is_null:
-            return {"success": False, "message": "Game not loaded"}
+            return {"success": False, "message": "sys_game_not_loaded"}
 
         player = world_chr_man.main_player
         if player is None or player.is_null or player.chr_ins.is_null:
-            return {"success": False, "message": "Player not found"}
+            return {"success": False, "message": "sys_player_not_found"}
 
         if action_type == "heal":
             data_module = player.chr_ins.modules.data
@@ -257,8 +221,8 @@ def perform_game_action(action_type):
                     data_module.mp = getattr(data_module, "max_mp", data_module.mp)
                 with contextlib.suppress(Exception):
                     data_module.fp = getattr(data_module, "max_fp", data_module.fp)
-                return {"success": True, "message": "Healed to full"}
-            return {"success": False, "message": "Data module not available"}
+                return {"success": True, "message": "sys_healed_full"}
+            return {"success": False, "message": "sys_data_module"}
 
         elif action_type == "fog_wall":
             mods = player.chr_ins.modules
@@ -266,16 +230,16 @@ def perform_game_action(action_type):
                 evt = mods.event
                 if evt and not evt.is_null:
                     evt.request_animation_id = 60060
-                    return {"success": True, "message": "Fog wall animation triggered."}
-            return {"success": False, "message": "Could not trigger fog wall animation."}
+                    return {"success": True, "message": "sys_fog_wall"}
+            return {"success": False, "message": "sys_fog_wall_failed"}
 
         elif action_type == "add_runes":
-            return {"success": True, "message": "Rune modification is view-only in this example"}
+            return {"success": True, "message": "sys_rune_view_only"}
         elif action_type == "toggle_god_mode":
-            return {"success": True, "message": "God mode toggled (mocked)"}
+            return {"success": True, "message": "sys_god_mode"}
 
-        return {"success": False, "message": "Unknown action"}
+        return {"success": False, "message": "sys_unknown_action"}
     except Exception as e:
         if "not initialized" in str(e):
-            return {"success": False, "message": "Game not loaded"}
+            return {"success": False, "message": "sys_game_not_loaded"}
         return {"success": False, "message": str(e)}

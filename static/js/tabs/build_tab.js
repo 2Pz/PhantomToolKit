@@ -24,7 +24,7 @@ function inspectRecentPlayer(index) {
       ashResults = [];
       ashQuery = '';
       openBuildTabShell();
-      document.getElementById('build-connection').innerText = 'Loading Recent';
+      document.getElementById('build-connection').innerText = window.t('build_loading_recent', 'Loading Recent');
       if (player.build_snapshot) {
         openRecentSnapshot(player.name || 'Recent Player', player.build_snapshot);
         return;
@@ -85,11 +85,11 @@ function openMissingRecentBuild(name, message) {
       localAppearance = null;
       buildDirty = true;
       openBuildTabShell();
-      document.getElementById('build-connection').innerText = 'No Snapshot';
+      document.getElementById('build-connection').innerText = window.t('build_no_snapshot', 'No Snapshot');
       renderStatusPanel();
       renderEquipmentGrid();
       renderConfigPanel();
-      document.getElementById('config-panel').innerHTML = `<div class="text-xs text-gray-400">${escapeHtml(message)}</div>`;
+      document.getElementById('config-panel').innerHTML = `<div class="text-xs text-gray-400">${escapeHtml(window.t(message, message))}</div>`;
     }
 
 function copyViewedBuild() {
@@ -108,12 +108,12 @@ function markBuildEditing() {
       buildDirty = true;
       const state = document.getElementById('build-edit-state');
       if (state) {
-        state.innerText = 'Editing - Sync Paused';
+        state.innerText = window.t('build_editing_paused', 'Editing - Sync Paused');
         state.classList.remove('text-gray-500');
         state.classList.add('text-[#bfa571]');
       }
       const connection = document.getElementById('build-connection');
-      if (connection) connection.innerText = 'Editing';
+      if (connection) connection.innerText = window.t('build_editing', 'Editing');
     }
 
 function refreshBuildFromGame() {
@@ -138,19 +138,19 @@ function updateBuild(force) {
           if (activeTab !== 'build') return;
           const connection = document.getElementById('build-connection');
           if (!data.loaded) {
-            connection.innerText = data.message || window.t('build_waiting', 'Waiting for game load...');
+            connection.innerText = data.message ? window.t(data.message, data.message) : window.t('build_waiting', 'Waiting for game load...');
             renderStatusPanel();
             renderEquipmentGrid();
             return;
           }
-          connection.innerText = isInspectingBuild() ? 'Inspecting' : 'Game Connected';
+          connection.innerText = isInspectingBuild() ? window.t('build_inspecting', 'Inspecting') : window.t('main_game_connected', 'Game Connected');
           localBuild = data.build || { slots: {} };
           localStatus = data.status || {};
           localAppearance = data.appearance || null;
           buildDirty = false;
           const state = document.getElementById('build-edit-state');
           if (state) {
-            state.innerText = isInspectingBuild() ? 'Read Only' : 'Live Sync';
+            state.innerText = isInspectingBuild() ? window.t('build_readonly', 'Read Only') : window.t('build_live_sync', 'Live Sync');
             state.classList.toggle('text-[#bfa571]', isInspectingBuild());
             state.classList.toggle('text-gray-500', !isInspectingBuild());
           }
@@ -159,18 +159,16 @@ function updateBuild(force) {
           renderConfigPanel();
         })
         .catch(() => {
-          document.getElementById('build-connection').innerText = 'Server Offline';
+          document.getElementById('build-connection').innerText = window.t('main_server_offline', 'Server Offline');
         });
     }
 
 function renderStatusPanel() {
       const panel = document.getElementById('build-status-panel');
-      const name = localStatus.name || 'Unknown';
+      const name = localStatus.name || window.t('build_unknown', 'Unknown');
       const title = inspectingName || name || '2Pz';
       document.getElementById('build-player-name').innerText = title;
       document.querySelector('#build-tab h2.text-center').innerText = isInspectingBuild() ? `${title}'s Build` : (locales['build_equipment'] || 'Equipment');
-      document.getElementById('build-primary-action').innerText = isInspectingBuild() ? (locales['build_copy'] || 'Copy Build') : (locales['build_apply'] || 'Apply Build');
-      document.getElementById('copy-build-btn').classList.toggle('hidden', !isInspectingBuild());
       const rows = attributes.map(attr => `
         <label class="flex justify-between items-center pr-2">
           <span class="text-base text-gray-200 Cormorant font-semibold tracking-wide" data-i18n="stat_${attr}">${labelFor(attr)}</span>
@@ -187,12 +185,12 @@ function renderStatusPanel() {
                 ${autoCalcLevel ? 'Active' : 'Manual'}
               </button>
             </div>
-            <div class="flex justify-between items-center pr-2">
-              <span class="text-xs fantasy-font text-gray-400 uppercase tracking-widest" data-i18n="build_level">Level</span>
+            <div class="flex justify-between items-center pr-2 gap-2">
+              <span class="flex-1 text-left leading-tight text-xs fantasy-font text-gray-400 uppercase tracking-widest" data-i18n="build_level">Level</span>
               ${renderSpinbox('level', localStatus.level, 'text-gray-100', 'w-14', autoCalcLevel)}
             </div>
-            <div class="flex justify-between items-center pr-2">
-              <span class="text-xs fantasy-font text-gray-400 uppercase tracking-widest" data-i18n="build_journey">Journey</span>
+            <div class="flex justify-between items-center pr-2 gap-2">
+              <span class="flex-1 text-left leading-tight text-xs fantasy-font text-gray-400 uppercase tracking-widest" data-i18n="build_journey">Journey</span>
               ${renderSpinbox('journey', localStatus.journey != null ? localStatus.journey : 1, 'text-gray-100', 'w-10')}
             </div>
           </div>
@@ -217,8 +215,8 @@ function renderStatusPanel() {
 
 function statusRow(key, label, golden) {
       return `
-        <label class="flex justify-between items-center pr-2">
-          <span class="text-xs fantasy-font text-gray-400 uppercase tracking-widest" data-i18n="stat_${key}">${label}</span>
+        <label class="flex justify-between items-center pr-2 gap-2">
+          <span class="flex-1 text-left leading-tight text-[11px] md:text-xs fantasy-font text-gray-400 uppercase tracking-widest" data-i18n="stat_${key}">${label}</span>
           ${renderSpinbox(key, localStatus[key], golden ? 'text-[#bfa571]' : 'text-gray-100', 'w-16')}
         </label>
       `;
@@ -329,10 +327,10 @@ function renderEquipmentGrid() {
             </div>
           </div>
           <div class="flex gap-1 mt-6">
-            ${renderSlot('head', 'Head')}
-            ${renderSlot('chest', 'Chest')}
-            ${renderSlot('hands', 'Hands')}
-            ${renderSlot('legs', 'Legs')}
+            ${renderSlot('head', window.t('build_head', 'Head'))}
+            ${renderSlot('chest', window.t('build_chest', 'Chest'))}
+            ${renderSlot('hands', window.t('build_hands', 'Hands'))}
+            ${renderSlot('legs', window.t('build_legs', 'Legs'))}
           </div>
           <div class="flex gap-12 mt-2">
             <div class="flex gap-1">
@@ -343,7 +341,7 @@ function renderEquipmentGrid() {
                 <div class="absolute inset-[-4px] rounded-full border border-[#bfa571]/40 pointer-events-none"></div>
                 <div class="absolute inset-[-8px] rounded-full border border-[#bfa571]/10 pointer-events-none"></div>
                 <div class="rounded-full bg-black/60 overflow-hidden border border-white/5 shadow-xl">
-                  ${renderSlot('great_rune', 'Rune', 'w-24 h-24 rounded-full')}
+                  ${renderSlot('great_rune', window.t('build_rune', 'Rune'), 'w-24 h-24 rounded-full')}
                 </div>
               </div>
             </div>
@@ -357,7 +355,7 @@ function renderEquipmentGrid() {
           <div class="mt-4 flex flex-col items-center">
             <div class="flex gap-2 items-center mb-1">
               <div class="h-px w-4 bg-white/10"></div>
-              <h4 class="text-[9px] fantasy-font text-gray-400 uppercase tracking-[0.2em]">Wondrous Physick</h4>
+              <h4 class="text-[9px] fantasy-font text-gray-400 uppercase tracking-[0.2em]">${window.t('build_wondrous_physick', 'Wondrous Physick')}</h4>
               <div class="h-px w-4 bg-white/10"></div>
             </div>
             <div class="flex gap-2 justify-center">
@@ -368,7 +366,7 @@ function renderEquipmentGrid() {
           <div class="mt-4 flex flex-col items-center">
             <div class="flex gap-2 items-center mb-1">
               <div class="h-px w-4 bg-white/10"></div>
-              <h4 class="text-[9px] fantasy-font text-gray-400 uppercase tracking-[0.2em]">Spells / Memory Slots</h4>
+              <h4 class="text-[9px] fantasy-font text-gray-400 uppercase tracking-[0.2em]">${window.t('build_memory_slots', 'Memory Slots')}</h4>
               <div class="h-px w-4 bg-white/10"></div>
             </div>
             <div class="flex flex-col gap-0.5">
@@ -583,7 +581,7 @@ function renderConfigPanel() {
               ${item.icon_id ? `<img src="/api/icons/${item.icon_id}" class="w-16 h-16 object-contain">` : ''}
             </div>
             <div class="flex-1">
-              <h4 class="fantasy-font text-gray-100 uppercase text-base leading-tight">${escapeHtml(item.name || 'Unknown')} ${item.upgrade && !String(item.name || '').includes('+') ? '+' + item.upgrade : ''}</h4>
+              <h4 class="fantasy-font text-gray-100 uppercase text-base leading-tight">${escapeHtml(item.name || window.t('build_unknown', 'Unknown'))} ${item.upgrade && !String(item.name || '').includes('+') ? '+' + item.upgrade : ''}</h4>
               <div class="flex justify-between items-center mt-2 border-b border-white/5 pb-1">
                 <span class="text-[10px] text-gray-500 uppercase tracking-widest">${window.t('build_id', 'ID')}</span>
                 <span class="text-xs text-[#bfa571] font-bold">${item.id || '--'}</span>
@@ -762,10 +760,12 @@ function applyBuild() {
       const loadApp = loadAppCheckbox ? loadAppCheckbox.checked : false;
       const loadEquipCheckbox = document.getElementById('load-with-equipment');
       const loadEquip = loadEquipCheckbox ? loadEquipCheckbox.checked : true;
+      const reloadCharacterCheckbox = document.getElementById('reload-character');
+      const reloadCharacter = reloadCharacterCheckbox ? reloadCharacterCheckbox.checked : false;
       fetch('/api/build/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slots: loadEquip ? (localBuild.slots || {}) : null, status: loadStats ? localStatus : null, appearance: loadApp ? localAppearance : null })
+        body: JSON.stringify({ slots: loadEquip ? (localBuild.slots || {}) : null, status: loadStats ? localStatus : null, appearance: loadApp ? localAppearance : null, reload_character: reloadCharacter })
       })
         .then(res => res.json())
         .then(data => {
@@ -785,9 +785,9 @@ function applyBuild() {
             renderConfigPanel();
           }
           if (data.message && data.message.includes("Main Menu")) {
-            alert(data.message);
+            alert(window.t(data.message, data.message));
           } else {
-            console.log(data.message || 'Build applied');
+            console.log(window.t(data.message, data.message) || 'Build applied');
           }
         });
     }

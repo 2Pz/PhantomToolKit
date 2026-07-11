@@ -46,6 +46,11 @@ def main():
             shutil.copy2(f, os.path.join(sd_dir, f))
     print("Done! Systemd units copied.")
 
+    print("Copying phantomtoolkit.ini to dist...")
+    if os.path.exists("phantomtoolkit.ini"):
+        shutil.copy2("phantomtoolkit.ini", os.path.join("dist", "phantomtoolkit.ini"))
+    print("Done! ini copied.")
+
 
 if __name__ == "__main__":
     main()

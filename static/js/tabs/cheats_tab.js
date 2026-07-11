@@ -46,7 +46,7 @@ function toggleCheat(key) {
           // Revert on failure
           cheatsState[key] = !newState;
           renderCheats();
-          window.showSystemMessage(window.t('sys_cheat_error', 'Failed to toggle cheat:') + ' ' + (data.message || window.t('sys_unknown_error', 'Unknown error')), true);
+          window.showSystemMessage(window.t('sys_cheat_error', 'Failed to toggle cheat:') + ' ' + (data.message ? window.t(data.message, data.message) : window.t('sys_unknown_error', 'Unknown error')), true);
         }
       })
       .catch(err => {

@@ -50,7 +50,7 @@ def get_inventory_items():
     try:
         pgd = _find_main_player()
         if not pgd:
-            return {"success": False, "message": "Game not loaded or player not found"}
+            return {"success": False, "message": "sys_game_player_not_found"}
 
         inv_data = pgd.equipment.equip_inventory_data.items_data
         lists_to_check = [("normal", inv_data.normal_entries_list()), ("key", inv_data.key_entries_list())]
@@ -144,7 +144,7 @@ def edit_inventory_item():
 
         pgd = _find_main_player()
         if not pgd:
-            return jsonify({"success": False, "message": "Game not loaded"})
+            return jsonify({"success": False, "message": "sys_game_not_loaded"})
 
         # Handle Gesture removal
         if list_name.startswith("gesture"):
@@ -173,7 +173,7 @@ def edit_inventory_item():
 
             return jsonify({"success": True})
 
-        return jsonify({"success": False, "message": "Invalid index"})
+        return jsonify({"success": False, "message": "sys_invalid_index"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
@@ -301,7 +301,7 @@ def add_inventory_item():
 
         pgd = _find_main_player()
         if not pgd:
-            return jsonify({"success": False, "message": "Game not loaded"})
+            return jsonify({"success": False, "message": "sys_game_not_loaded"})
 
         target_id = int(global_id) if global_id is not None else int(item_id)
         base_id = target_id & 0x0FFFFFFF
@@ -347,8 +347,8 @@ def add_inventory_item():
                 _set_map_event_flags(base_id, True)
 
                 return jsonify({"success": True})
-            return jsonify({"success": False, "message": "Failed to add item (engine returned false)"})
+            return jsonify({"success": False, "message": "sys_add_item_failed"})
 
-        return jsonify({"success": False, "message": "give_item not available in current fspy version"})
+        return jsonify({"success": False, "message": "sys_give_item_unsupported"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})

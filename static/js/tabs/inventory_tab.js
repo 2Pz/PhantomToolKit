@@ -31,7 +31,7 @@ function refreshInventory() {
                 inventoryData = data.items || [];
                 renderInventoryGrid();
             } else {
-                document.getElementById('inventory-grid').innerHTML = `<div class="text-red-500 text-center w-full text-sm mt-10">${escapeHtml(data.message || 'Failed to load')}</div>`;
+                document.getElementById('inventory-grid').innerHTML = `<div class="text-red-500 text-center w-full text-sm mt-10">${escapeHtml(window.t(data.message, data.message) || 'Failed to load')}</div>`;
             }
         });
 }
@@ -255,7 +255,7 @@ function saveInvEdit() {
             invSelectedEntryIndex = null;
             renderInvConfigPanel();
         } else {
-            alert(data.message || 'Failed to edit inventory');
+            alert(window.t(data.message, data.message) || 'Failed to edit inventory');
         }
     });
 }
@@ -281,7 +281,7 @@ function removeInvItem() {
             invSelectedEntryIndex = null;
             renderInvConfigPanel();
         } else {
-            alert(data.message || 'Failed to remove inventory item');
+            alert(window.t(data.message, data.message) || 'Failed to remove inventory item');
         }
     });
 }
@@ -301,7 +301,7 @@ function addInvItem() {
             invPendingItem = null;
             renderInvConfigPanel();
         } else {
-            alert(data.message || 'Failed to add item');
+            alert(window.t(data.message, data.message) || 'Failed to add item');
         }
     });
 }
