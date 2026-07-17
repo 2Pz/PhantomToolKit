@@ -1,26 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=1920" />
   <title>Phantom Toolkit Mod</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@400;600&family=Cairo:wght@400;600;700;900&family=Noto+Sans+Arabic:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@400;600&family=Cairo:wght@400;600;700;900&family=Noto+Sans+Arabic:wght@400;600;700;900&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=6">
   <script>
-    window.onerror = function(msg, url, line, col, error) {
+    window.onerror = function (msg, url, line, col, error) {
       try {
         var errStr = msg + " at " + (url || "unknown") + ":" + line + ":" + col;
         var req = new XMLHttpRequest();
         req.open('GET', '/error_log/' + encodeURIComponent(errStr), true);
         req.send();
-      } catch(e) {}
+      } catch (e) { }
       return false;
     };
   </script>
 </head>
+
 <body class="textured-bg">
 
   <!-- Sidebar -->
@@ -41,7 +45,9 @@
       <span data-i18n="tab_backup">Backup</span>
     </div>
     <div class="mt-auto px-2 pb-4 w-full">
-      <select id="language-select" onchange="changeLanguage(this.value)" class="w-full appearance-none bg-black/40 text-gray-300 border border-white/5 hover:border-[#bfa571]/50 rounded px-1 py-1.5 text-[11px] sm:text-xs outline-none cursor-pointer text-center" style="text-align-last: center;">
+      <select id="language-select" onchange="changeLanguage(this.value)"
+        class="w-full appearance-none bg-black/40 text-gray-300 border border-white/5 hover:border-[#bfa571]/50 rounded px-1 py-1.5 text-[11px] sm:text-xs outline-none cursor-pointer text-center"
+        style="text-align-last: center;">
       </select>
     </div>
   </div>
@@ -68,7 +74,8 @@
   </div>
 
   <!-- Centralized System Message Toast -->
-  <div id="system-message-toast" class="fixed top-8 left-1/2 transform -translate-x-1/2 -translate-y-4 bg-black/90 border border-[#bfa571]/50 text-[#bfa571] px-6 py-3 rounded shadow-2xl opacity-0 pointer-events-none transition-all duration-300 z-[999] flex items-center gap-3 backdrop-blur-sm">
+  <div id="system-message-toast"
+    class="fixed top-8 left-1/2 transform -translate-x-1/2 -translate-y-4 bg-black/90 border border-[#bfa571]/50 text-[#bfa571] px-6 py-3 rounded shadow-2xl opacity-0 pointer-events-none transition-all duration-300 z-[999] flex items-center gap-3 backdrop-blur-sm">
     <span class="fantasy-font uppercase tracking-widest font-bold text-xs" id="system-message-text"></span>
   </div>
 
@@ -91,4 +98,5 @@
     }
   </script>
 </body>
+
 </html>

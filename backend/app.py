@@ -36,6 +36,10 @@ def stats():
     data = get_player_data()
     if not isinstance(data, dict):
         data = {"loaded": False}
+    else:
+        from backend.tabs.cheats_tab import get_active_cheats
+
+        data["cheats"] = get_active_cheats()
 
     try:
         return jsonify(data)
@@ -264,4 +268,6 @@ def handle_error_log(msg):
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    from backend.utils.config import read_port
+
+    app.run(host="0.0.0.0", port=read_port(), debug=True)

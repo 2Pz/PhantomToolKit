@@ -49,6 +49,11 @@ def _cheat_loop():
         time.sleep(1)
 
 
+def get_active_cheats():
+    global _active_cheats
+    return _active_cheats
+
+
 def toggle_cheat(cheat_name: str, enabled: bool):
     try:
         import fspy

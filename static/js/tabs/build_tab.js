@@ -567,11 +567,11 @@ function renderConfigPanel() {
 
       const pendingActions = pendingItem ? `
         <div class="grid grid-cols-2 gap-2 mt-3">
-          <button class="py-2 bg-[#bfa571] text-black fantasy-font uppercase tracking-widest text-xs font-bold hover:brightness-110" onclick="confirmPendingItem()">${window.t('build_confirm', 'Confirm & Equip')}</button>
+          <button class="py-2 bg-[#bfa571] text-black fantasy-font uppercase tracking-widest text-xs font-bold hover:brightness-110" onclick="confirmPendingItem(event)">${window.t('build_confirm', 'Confirm & Equip')}</button>
           <button class="py-2 bg-white/10 text-gray-300 fantasy-font uppercase tracking-widest text-xs font-bold hover:bg-white/20" onclick="pendingItem=null; renderConfigPanel()">${window.t('build_dismiss', 'Dismiss')}</button>
         </div>
       ` : `
-        <button class="w-full mt-4 py-2 bg-white/5 border border-white/10 text-gray-300 fantasy-font uppercase tracking-widest text-xs font-bold hover:bg-white/10 hover:text-[#bfa571] hover:border-[#bfa571]/50 transition-all" onclick="customizeCurrentItem()">${window.t('build_customize', 'Customize Weapon')}</button>
+        <button class="w-full mt-4 py-2 bg-white/5 border border-white/10 text-gray-300 fantasy-font uppercase tracking-widest text-xs font-bold hover:bg-white/10 hover:text-[#bfa571] hover:border-[#bfa571]/50 transition-all" onclick="customizeCurrentItem(event)">${window.t('build_customize', 'Customize Weapon')}</button>
       `;
 
       panel.innerHTML = `
@@ -598,15 +598,20 @@ function renderConfigPanel() {
               ` : ''}
             </div>
           </div>
-          ${renderWeaponConfig(item)}
-          ${renderSpiritConfig(item)}
-          ${renderQuantityConfig(item)}
+          ${pendingItem ? renderWeaponConfig(item) : ''}
+          ${pendingItem ? renderSpiritConfig(item) : ''}
+          ${pendingItem ? renderQuantityConfig(item) : ''}
           ${pendingActions}
         </div>
       `;
     }
 
-function customizeCurrentItem() {
+let lastConfirmTime = 0;
+
+function customizeCurrentItem(event) {
+      if (event) { event.preventDefault(); event.stopPropagation(); }
+      if (Date.now() - lastConfirmTime < 500) return; // Ghost click protection
+      
       const item = selectedSlot && localBuild.slots ? localBuild.slots[selectedSlot] : null;
       if (item) {
         if (isWeaponSlot(selectedSlot)) {
@@ -729,10 +734,15 @@ function renderQuantityConfig(item) {
       `;
     }
 
-function confirmPendingItem() {
+function confirmPendingItem(event) {
+      if (event) { event.preventDefault(); event.stopPropagation(); }
+      lastConfirmTime = Date.now();
+      
       if (!selectedSlot || !pendingItem) return;
       localBuild.slots[selectedSlot] = { ...pendingItem };
       pendingItem = null;
+      selectedSlot = null; // Clear selection after equipping
+      document.getElementById('selected-slot-label').innerText = window.t('build_select_slot', 'Select a Slot');
       markBuildEditing();
       renderEquipmentGrid();
       renderConfigPanel();

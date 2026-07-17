@@ -226,8 +226,10 @@ body {
     input[type="number"].custom-spinbox-input::-webkit-outer-spin-button,
     input[type="number"].custom-spinbox-input::-webkit-inner-spin-button {
       -webkit-appearance: none;
+      appearance: none;
       margin: 0;
     }
     input[type="number"].custom-spinbox-input {
       -moz-appearance: textfield;
+      appearance: textfield;
     }

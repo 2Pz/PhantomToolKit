@@ -2,6 +2,13 @@ function updateStats() {
       fetch('/api/stats')
         .then(res => res.json())
         .then(data => {
+          if (data.cheats) {
+            const oldState = JSON.stringify(typeof cheatsState !== 'undefined' ? cheatsState : {});
+            cheatsState = data.cheats;
+            if (oldState !== JSON.stringify(cheatsState) && activeTab === 'cheats' && typeof renderCheats === 'function') {
+                renderCheats();
+            }
+          }
 
           const statusEl = document.getElementById('status-text');
           const tbody = document.getElementById('current-players-body');

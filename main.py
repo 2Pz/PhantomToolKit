@@ -1,9 +1,12 @@
 import builtins
+import socket
 import sys
 import threading
 import time
 
 from fromsoftware_py import setup_mod
+
+from backend.utils.config import read_port
 
 ctx = setup_mod(__file__)
 mod_name = ctx.mod_name
@@ -39,8 +42,26 @@ sys.stdout = LoggerWriter()
 sys.stderr = LoggerWriter("ERROR: ")
 
 
+def get_local_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        try:
+            return socket.gethostbyname(socket.gethostname())
+        except Exception:
+            return "Unknown-IP"
+
+
 def start_web_server():
-    log("Starting web server on http://127.0.0.1:5000")
+    port = read_port()
+    local_ip = get_local_ip()
+    log(f"Starting web server on port {port}")
+    log(f" - Local:   http://127.0.0.1:{port}")
+    log(f" - Network: http://{local_ip}:{port} (Must be on same network)")
     stop_event = getattr(builtins, "__fspy_reload_stop__", None)
 
     old_server = getattr(builtins, "__fspy_web_server", None)
@@ -62,7 +83,7 @@ def start_web_server():
 
         from backend.app import app
 
-        server = werkzeug.serving.make_server("127.0.0.1", 5000, app)
+        server = werkzeug.serving.make_server("0.0.0.0", port, app, threaded=True)
         builtins.__fspy_web_server = server
         t = threading.Thread(target=server.serve_forever, daemon=True)
         t.start()
