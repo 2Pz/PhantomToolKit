@@ -1,0 +1,9 @@
+[Unit]
+Description=Phantom screenshot request watcher
+
+[Path]
+PathExists=/tmp/phantom_ss_request
+Unit=phantom-screenshot.service
+
+[Install]
+WantedBy=default.target

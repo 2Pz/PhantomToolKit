@@ -1,0 +1,8 @@
+[Unit]
+Description=Phantom screenshot capture
+
+[Service]
+Type=oneshot
+EnvironmentFile=-%h/.config/phantomtoolkit/screenshot.env
+ExecStart=/bin/sh -c 'F=/tmp/phantom_screenshot.png; rm -f $F; if [ -n "$PHANTOM_SCREENSHOT_CMD" ]; then eval "$PHANTOM_SCREENSHOT_CMD"; elif command -v grim >/dev/null; then grim $F; elif command -v spectacle >/dev/null; then spectacle --background --nonotify --fullscreen --output $F; elif command -v gnome-screenshot >/dev/null; then gnome-screenshot -f $F; elif command -v scrot >/dev/null; then scrot $F; else echo "No screenshot tool found"; exit 1; fi'
+ExecStartPost=/bin/sh -c 'rm -f /tmp/phantom_ss_request'
