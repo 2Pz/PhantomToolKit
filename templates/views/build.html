@@ -1,0 +1,74 @@
+<div class="h-full flex">
+      <aside class="w-[320px] shrink-0 build-panel border-r custom-scrollbar overflow-y-auto p-6">
+        <div class="mb-6">
+          <div class="flex justify-between items-start px-1">
+            <h2 id="build-player-name" class="text-xl fantasy-font text-gray-100 tracking-widest leading-none">2Pz</h2>
+            <span id="build-connection" class="text-[9px] fantasy-font uppercase tracking-widest text-[#bfa571]/80">Waiting</span>
+          </div>
+          <div class="status-header-line w-full"></div>
+        </div>
+        <div id="build-status-panel"></div>
+      </aside>
+
+      <main class="flex-1 flex flex-col items-center justify-start p-4 overflow-y-auto custom-scrollbar">
+        <div class="mb-1 w-full max-w-3xl flex flex-col items-center">
+          <h2 class="text-xl fantasy-font text-[#bfa571] uppercase tracking-widest text-center" data-i18n="build_equipment">Equipment</h2>
+          <div class="status-header-line w-64 mx-auto"></div>
+          <div class="flex flex-wrap items-center justify-center gap-2 mt-2 mb-1 p-2 bg-white/5 border border-white/5 rounded-md backdrop-blur-md w-full max-w-3xl">
+            <button id="build-primary-action" class="build-action-btn primary" onclick="applyBuild()" data-i18n="build_apply">Apply Build</button>
+            <button class="build-action-btn" onclick="saveBuildToServer()" data-i18n="build_save">Save Build</button>
+            <button class="build-action-btn" onclick="loadBuildFromServer()" data-i18n="build_load">Load Build</button>
+            <div class="h-6 w-px bg-white/10 mx-1"></div>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input id="load-with-equipment" type="checkbox" class="accent-[#bfa571]" checked>
+              <span class="text-[9px] inter-font font-black uppercase tracking-wider text-gray-400" data-i18n="build_load_equip">Load Equip</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input id="load-with-stats" type="checkbox" class="accent-[#bfa571]" checked>
+              <span class="text-[9px] inter-font font-black uppercase tracking-wider text-gray-400" data-i18n="build_load_stats">Load Stats</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input id="load-with-appearance" type="checkbox" class="accent-[#bfa571]" checked>
+              <span class="text-[9px] inter-font font-black uppercase tracking-wider text-gray-400" data-i18n="build_load_app">Load Appearance</span>
+            </label>
+            <span id="build-edit-state" class="text-[9px] inter-font font-black uppercase tracking-wider text-gray-500" data-i18n="build_live_sync">Live Sync</span>
+            <input id="build-file-input" type="file" accept="application/json,.json" class="hidden" onchange="loadBuildFile(event)">
+          </div>
+        </div>
+        <div id="equipment-grid"></div>
+        <div class="mt-8 mb-4 text-center w-full max-w-3xl flex justify-center">
+            <span class="text-xs inter-font text-gray-500/80" data-i18n="build_coop_sync_tip">In Seamless Co-op, manually equip/unequip any equipment slot in-game or warp to a grace to sync new equipment to peers.</span>
+        </div>
+      </main>
+
+      <aside class="w-[420px] shrink-0 flex flex-col build-panel border-l">
+        <div id="config-panel" class="shrink-0 border-b border-[#2a2a2a] bg-black/60 p-4"></div>
+        <div class="p-4 bg-black/60 border-b border-[#2a2a2a]">
+          <div class="flex justify-between items-center mb-4">
+            <h3 id="selected-slot-label" class="fantasy-font text-[#bfa571] uppercase tracking-widest text-sm" data-i18n="build_select_slot">Select a Slot</h3>
+            <button class="text-[10px] uppercase text-gray-500 hover:text-white transition-colors border border-white/10 px-2 py-1" onclick="clearSelectedSlot()" data-i18n="build_clear_slot">Clear Slot</button>
+          </div>
+          <input id="item-search" class="build-input" placeholder="Search item..." data-i18n="build_search_item" oninput="queueSearch()">
+          <select id="category-filter" class="build-input mt-2" onchange="runItemSearch()"></select>
+        </div>
+        <div class="flex-1 overflow-y-auto p-3 custom-scrollbar">
+          <div id="search-results" class="grid grid-cols-5 gap-1.5"></div>
+        </div>
+      </aside>
+    </div>
+<!-- Build Selection Modal -->
+<div id="build-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
+  <div class="bg-[#1e1e1e] border border-white/10 rounded-md shadow-[0_0_30px_rgba(0,0,0,0.8)] p-6 w-full max-w-md">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl fantasy-font text-[#bfa571] uppercase tracking-widest" data-i18n="build_select_build">Select a Build</h2>
+      <button onclick="document.getElementById('build-modal').classList.add('hidden'); document.getElementById('build-modal').classList.remove('flex');" class="text-gray-500 hover:text-white text-2xl leading-none">&times;</button>
+    </div>
+    <div class="status-header-line w-full mb-4"></div>
+    <div id="build-list-container" class="flex flex-col gap-2 max-h-[50vh] overflow-y-auto custom-scrollbar pr-2">
+      <!-- Built by JS -->
+    </div>
+    <div class="mt-4 flex justify-end">
+      <button onclick="document.getElementById('build-modal').classList.add('hidden'); document.getElementById('build-modal').classList.remove('flex');" class="px-4 py-2 rounded inter-font uppercase tracking-wider text-[10px] font-black transition-all bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10" data-i18n="build_cancel">Cancel</button>
+    </div>
+  </div>
+</div>
