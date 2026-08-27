@@ -1,3 +1,4 @@
+import contextlib
 import threading
 import time
 
@@ -9,7 +10,7 @@ _cheat_thread_started = False
 def _cheat_loop():
     import fspy
 
-    native_cheats = {"noDead": 0, "noDamage": 1, "noFP": 2, "noStamina": 3, "noGoods": 0}
+    native_cheats = {"noDead": 0, "noDamage": 1, "noFP": 2, "noStamina": 3}
 
     # Store previous state for hook-based cheats to detect toggles
     prev_no_hit = False
@@ -37,13 +38,20 @@ def _cheat_loop():
                         if _active_cheats.get(cheat_name) and base_flags != 0:
                             apply_bit_flag_loop(base_flags + 0x19B, native_cheats[cheat_name])
 
-                    if _active_cheats.get("noGoods"):
-                        apply_bit_flag_loop(player_ptr + 0x532, native_cheats["noGoods"])
-
-            if _active_cheats.get("noArrow"):
+            dbg = None
+            with contextlib.suppress(Exception):
                 dbg = fspy.PyWorldChrManDbgFlags.get_instance()
-                if dbg and not getattr(dbg, "is_null", True) and not dbg.all_no_arrow_consume:
+
+            if dbg and not getattr(dbg, "is_null", True):
+                if _active_cheats.get("noGoods") and not dbg.player_no_goods_consume:
+                    dbg.player_no_goods_consume = True
+                elif not _active_cheats.get("noGoods") and dbg.player_no_goods_consume:
+                    dbg.player_no_goods_consume = False
+
+                if _active_cheats.get("noArrow") and not dbg.all_no_arrow_consume:
                     dbg.all_no_arrow_consume = True
+                elif not _active_cheats.get("noArrow") and dbg.all_no_arrow_consume:
+                    dbg.all_no_arrow_consume = False
         except Exception:
             pass
         time.sleep(1)
@@ -85,7 +93,7 @@ def toggle_cheat(cheat_name: str, enabled: bool):
                 return {"success": False, "message": "sys_no_weight_failed"}
             return {"success": False, "message": "sys_no_weight_no_sig"}
 
-        native_cheats = {"noDead": 0, "noDamage": 1, "noFP": 2, "noStamina": 3, "noGoods": 0}
+        native_cheats = {"noDead": 0, "noDamage": 1, "noFP": 2, "noStamina": 3}
 
         if cheat_name == "noHit":
             if hasattr(fspy, "toggle_no_hit") and fspy.toggle_no_hit(enabled):
@@ -110,24 +118,26 @@ def toggle_cheat(cheat_name: str, enabled: bool):
                 if nxt != cur:
                     fspy.write_u8(target_ptr, nxt)
 
-            if cheat_name in ["noDead", "noDamage", "noFP", "noStamina"]:
-                base_flags_ptr = fspy.read_ptr(player_ptr + 0x190)
-                if base_flags_ptr != 0:
-                    base_flags = fspy.read_ptr(base_flags_ptr + 0x0)
-                    if base_flags != 0:
-                        apply_bit_flag(base_flags + 0x19B)
-                        return {"success": True}
-            elif cheat_name == "noGoods":
-                apply_bit_flag(player_ptr + 0x532)
-                return {"success": True}
+            base_flags_ptr = fspy.read_ptr(player_ptr + 0x190)
+            if base_flags_ptr != 0:
+                base_flags = fspy.read_ptr(base_flags_ptr + 0x0)
+                if base_flags != 0:
+                    apply_bit_flag(base_flags + 0x19B)
+                    return {"success": True}
             return {"success": False, "message": f"Failed to set {cheat_name} (pointers unresolved)"}
 
-        # Fallbacks to DbgFlags for remaining like noArrow
-        dbg = fspy.PyWorldChrManDbgFlags.get_instance()
+        # Fallbacks to DbgFlags for remaining like noArrow, noGoods
+        dbg = None
+        with contextlib.suppress(Exception):
+            dbg = fspy.PyWorldChrManDbgFlags.get_instance()
+
         if dbg is None or getattr(dbg, "is_null", True):
             return {"success": False, "message": "sys_debug_flags_not_loaded"}
 
-        mapping = {"noArrow": "all_no_arrow_consume"}
+        mapping = {
+            "noArrow": "all_no_arrow_consume",
+            "noGoods": "player_no_goods_consume",
+        }
         if cheat_name in mapping:
             setattr(dbg, mapping[cheat_name], enabled)
             return {"success": True}
