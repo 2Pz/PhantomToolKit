@@ -311,52 +311,57 @@ def play_notification(name):
 
 
 def do_create_backup():
-    settings = read_settings()
-    save_dir, save_file, backup_dir = _get_backup_paths(settings)
+    try:
+        settings = read_settings()
+        save_dir, save_file, backup_dir = _get_backup_paths(settings)
 
-    if not save_dir or not save_file:
-        return None
+        if not save_dir:
+            return None, "Save directory is empty."
+        if not save_file:
+            return None, "Save file is empty."
 
-    src_path = os.path.join(save_dir, save_file)
-    if not os.path.exists(src_path):
-        return None
+        src_path = os.path.join(save_dir, save_file)
+        if not os.path.exists(src_path):
+            return None, f"Save file does not exist: {src_path}"
 
-    os.makedirs(backup_dir, exist_ok=True)
-    _request_fspy_save(settings)
+        os.makedirs(backup_dir, exist_ok=True)
+        _request_fspy_save(settings)
 
-    screenshot_bytes, ext = capture_screenshot_mss()
+        screenshot_bytes, ext = capture_screenshot_mss()
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_name = f"backup_{timestamp}.zip"
-    dst_path = os.path.join(backup_dir, backup_name)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_name = f"backup_{timestamp}.zip"
+        dst_path = os.path.join(backup_dir, backup_name)
 
-    with zipfile.ZipFile(dst_path, "w", zipfile.ZIP_DEFLATED) as zf:
-        zf.write(src_path, arcname=save_file)
-        if screenshot_bytes:
-            zf.writestr(ext, screenshot_bytes)
+        with zipfile.ZipFile(dst_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.write(src_path, arcname=save_file)
+            if screenshot_bytes:
+                zf.writestr(ext, screenshot_bytes)
 
-    max_backups = settings.get("max_backups", 20)
-    pinned_names = get_pinned_list(backup_dir)
-    all_backups = sorted(
-        [f for f in os.listdir(backup_dir) if (f.endswith(".sl2") or f.endswith(".zip")) and f not in pinned_names],
-        key=lambda x: os.path.getmtime(os.path.join(backup_dir, x)),
-        reverse=True,
-    )
+        max_backups = settings.get("max_backups", 20)
+        pinned_names = get_pinned_list(backup_dir)
+        all_backups = sorted(
+            [f for f in os.listdir(backup_dir) if (f.endswith(".sl2") or f.endswith(".zip")) and f not in pinned_names],
+            key=lambda x: os.path.getmtime(os.path.join(backup_dir, x)),
+            reverse=True,
+        )
 
-    if len(all_backups) > max_backups:
-        for old in all_backups[max_backups:]:
-            with contextlib.suppress(Exception):
-                os.remove(os.path.join(backup_dir, old))
+        if len(all_backups) > max_backups:
+            for old in all_backups[max_backups:]:
+                with contextlib.suppress(Exception):
+                    os.remove(os.path.join(backup_dir, old))
 
-    play_notification("save_notification")
-    return backup_name
+        play_notification("save_notification")
+        return backup_name, None
+    except Exception as e:
+        return None, f"Exception: {str(e)}"
 
 
 @backup_bp.route("/create", methods=["POST"])
 def create_backup():
-    name = do_create_backup()
+    name, error = do_create_backup()
     if not name:
-        return jsonify({"detail": "Failed to create backup"}), 400
+        return jsonify({"detail": error or "Failed to create backup"}), 400
     return jsonify({"name": name, "success": True})
 
 
@@ -702,6 +707,7 @@ def hotkey_poller():
     builtins.__phantom_hotkey_poller_id = my_id
 
     last_state = {}
+    last_vks_map = {}
     while getattr(builtins, "__phantom_hotkey_poller_id", None) == my_id:
         try:
             settings = read_settings()
@@ -714,8 +720,21 @@ def hotkey_poller():
 
             for name, (vks, action) in binds.items():
                 if not vks:
+                    last_vks_map[name] = vks
                     continue
+
                 pressed = all(get_async_key_state(vk) for vk in vks)
+
+                # Check if the configured vks changed
+                vks_changed = last_vks_map.get(name) != vks
+                last_vks_map[name] = vks
+
+                if vks_changed:
+                    # If the keybind was just changed, initialize its state to whatever is currently pressed
+                    # so we don't fire immediately if they are holding it down while assigning.
+                    last_state[name] = pressed
+                    continue
+
                 was_pressed = last_state.get(name, False)
                 if pressed and not was_pressed:
                     threading.Thread(target=action, daemon=True).start()

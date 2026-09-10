@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const settingsPanel = document.getElementById('backup-settings-panel');
     const closeSettingsBtn = document.getElementById('close-settings-btn');
-    const saveSettingsBtn = document.getElementById('save-settings-btn');
     
     const selectedDetails = document.getElementById('selected-backup-details');
     const noSelectionView = document.getElementById('no-selection-view');
@@ -62,7 +61,14 @@ document.addEventListener('DOMContentLoaded', () => {
     async function apiCall(url, options = {}) {
         try {
             const res = await fetch(url, options);
-            if (!res.ok) throw new Error('API Error');
+            if (!res.ok) {
+                let errText = 'API Error';
+                try {
+                    const data = await res.json();
+                    if (data.detail) errText = data.detail;
+                } catch(e) {}
+                throw new Error(errText);
+            }
             return await res.json();
         } catch (e) {
             console.error(e);
@@ -110,11 +116,12 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (availableSaveFiles.length > 0) {
                 setSaveFile.value = availableSaveFiles[0];
                 settings.save_file_name = availableSaveFiles[0];
+                syncSettings();
             }
         } catch (e) { }
     }
 
-    async function saveSettings() {
+    async function syncSettings() {
         settings.save_directory = setSaveDir.value;
         settings.backup_directory = setBackupDir.value;
         settings.save_file_name = setSaveFile.value;
@@ -128,28 +135,11 @@ document.addEventListener('DOMContentLoaded', () => {
         settings.notification_volume = parseInt(setVolume.value);
         settings.quit_to_menu_before_load = setSafeLoad.checked;
 
-        try {
-            await apiCall('/api/backup/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(settings)
-            });
-            saveSettingsBtn.textContent = window.t('bkp_btn_settings_saved', 'Settings Saved');
-            saveSettingsBtn.classList.replace('bg-[#bfa571]', 'bg-emerald-900/40');
-            saveSettingsBtn.classList.replace('text-black', 'text-emerald-400');
-            saveSettingsBtn.classList.replace('border-[#bfa571]', 'border-emerald-500');
-            setTimeout(() => {
-                saveSettingsBtn.textContent = window.t('bkp_btn_commit_changes', 'Commit Changes');
-                saveSettingsBtn.classList.replace('bg-emerald-900/40', 'bg-[#bfa571]');
-                saveSettingsBtn.classList.replace('text-emerald-400', 'text-black');
-                saveSettingsBtn.classList.replace('border-emerald-500', 'border-[#bfa571]');
-            }, 2000);
-            if (settings.save_directory) {
-                await fetchSaveFiles(settings.save_directory, '*');
-            }
-        } catch (e) {
-            showStatus(window.t('bkp_status_save_failed', 'Failed to save settings'));
-        }
+        await apiCall('/api/backup/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings)
+        });
     }
 
     async function loadBackups() {
@@ -362,12 +352,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 settings[kb.id] = modifiers.join('+');
                 settings[`${kb.id}_vks`] = vks;
                 input.blur();
+                syncSettings();
             };
             
             clearBtn.onclick = () => {
                 settings[kb.id] = '';
                 settings[`${kb.id}_vks`] = [];
                 input.value = 'NONE';
+                syncSettings();
             };
         });
         if (typeof translateUI === 'function') translateUI();
@@ -392,13 +384,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     closeSettingsBtn.onclick = settingsBtn.onclick;
-    saveSettingsBtn.onclick = saveSettings;
     refreshBtn.onclick = loadBackups;
 
     createBackupBtn.onclick = async () => {
         showStatus(window.t('bkp_status_creating', 'Creating backup...'));
         createBackupBtn.disabled = true;
         try {
+            await syncSettings();
             await apiCall('/api/backup/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -407,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showStatus(window.t('bkp_status_created', 'Backup created'));
             await loadBackups();
         } catch (e) {
-            showStatus(window.t('bkp_status_create_failed', 'Failed to create backup'));
+            showStatus(e.message || window.t('bkp_status_create_failed', 'Failed to create backup'));
         } finally {
             createBackupBtn.disabled = false;
         }
@@ -415,6 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     toggleAutoBtn.onclick = async () => {
         try {
+            await syncSettings();
             if (autoRunning) {
                 await apiCall('/api/backup/auto/stop', { method: 'POST' });
             } else {
@@ -432,6 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (data.paths.length === 1) {
                 setSaveDir.value = data.paths[0].path;
                 showStatus(window.t('bkp_status_found', 'Found: {0}').replace('{0}', data.paths[0].path));
+                await syncSettings();
                 await fetchSaveFiles(setSaveDir.value, '*');
             } else {
                 autoFindResults.innerHTML = '';
@@ -442,6 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.onclick = async () => {
                         setSaveDir.value = r.path;
                         autoFindResults.classList.add('hidden');
+                        await syncSettings();
                         await fetchSaveFiles(setSaveDir.value, '*');
                     };
                     autoFindResults.appendChild(btn);
@@ -549,6 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalSelect.onclick = async () => {
         if (currentPickerTarget && currentPath) {
             currentPickerTarget.value = currentPath;
+            await syncSettings();
             if (currentPickerTarget === setSaveDir) {
                 await fetchSaveFiles(setSaveDir.value, '*');
             }
@@ -559,18 +555,27 @@ document.addEventListener('DOMContentLoaded', () => {
     btnBrowseSave.onclick = () => openPicker(setSaveDir);
     btnBrowseBackup.onclick = () => openPicker(setBackupDir);
 
+    setSaveDir.onchange = syncSettings;
+    setBackupDir.onchange = syncSettings;
+    setSaveFile.onchange = syncSettings;
+    setIntervalInput.onchange = syncSettings;
+    setSafeLoad.onchange = syncSettings;
 
     setMethod.onchange = () => {
         setMethodLabel.textContent = setMethod.value == 0 ? 'Mins' : 'Sleep';
         setIntervalInput.value = setMethod.value == 0 ? settings.auto_backup_interval : settings.sleep_between_saves;
+        syncSettings();
     };
     
     setMaxBackups.oninput = () => setMaxBackupsVal.textContent = setMaxBackups.value;
+    setMaxBackups.onchange = syncSettings;
     setVolume.oninput = () => setVolumeVal.textContent = setVolume.value + '%';
+    setVolume.onchange = syncSettings;
 
     // Actions
     btnRestore.onclick = async () => {
         if (!selectedBackup) return;
+        try { await syncSettings(); } catch(e) {}
         const msg = settings.quit_to_menu_before_load 
             ? window.t('bkp_msg_safe_load', "Safe Load Active: This will return you to the Main Menu and restore.") 
             : window.t('bkp_msg_unsafe_load', "WARNING: You should be in the Main Menu before loading a save!");
