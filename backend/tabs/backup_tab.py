@@ -333,10 +333,16 @@ def do_create_backup():
         backup_name = f"backup_{timestamp}.zip"
         dst_path = os.path.join(backup_dir, backup_name)
 
+        tmp_src = src_path + ".tmp"
+        shutil.copy2(src_path, tmp_src)
+
         with zipfile.ZipFile(dst_path, "w", zipfile.ZIP_DEFLATED) as zf:
-            zf.write(src_path, arcname=save_file)
+            zf.write(tmp_src, arcname=save_file)
             if screenshot_bytes:
                 zf.writestr(ext, screenshot_bytes)
+
+        with contextlib.suppress(OSError):
+            os.remove(tmp_src)
 
         max_backups = settings.get("max_backups", 20)
         pinned_names = get_pinned_list(backup_dir)
@@ -377,14 +383,19 @@ def _restore_file(src_path, dst_path, settings):
                 gm.save_requested = True
             time.sleep(1.5)
 
+    tmp_path = dst_path + ".tmp"
     if src_path.endswith(".zip"):
         with zipfile.ZipFile(src_path, "r") as zf:
             members = [m for m in zf.namelist() if m not in ("screenshot.png", "screenshot.jpg")]
             if members:
-                with zf.open(members[0]) as source, open(dst_path, "wb") as target:
+                with zf.open(members[0]) as source, open(tmp_path, "wb") as target:
                     shutil.copyfileobj(source, target)
     else:
-        shutil.copy2(src_path, dst_path)
+        shutil.copy2(src_path, tmp_path)
+
+    os.replace(tmp_path, dst_path)
+    with contextlib.suppress(OSError):
+        os.remove(dst_path + ".bak")
 
     play_notification("load_notification")
 
@@ -508,10 +519,16 @@ def auto_backup_worker():
                     backup_name = f"autobackup_{timestamp}.zip"
                     dst_path = os.path.join(backup_dir, backup_name)
 
+                    tmp_src = os.path.join(save_dir, save_file) + ".tmp"
+                    shutil.copy2(os.path.join(save_dir, save_file), tmp_src)
+
                     with zipfile.ZipFile(dst_path, "w", zipfile.ZIP_DEFLATED) as zf:
-                        zf.write(os.path.join(save_dir, save_file), arcname=save_file)
+                        zf.write(tmp_src, arcname=save_file)
                         if screenshot_bytes:
                             zf.writestr(ext, screenshot_bytes)
+
+                    with contextlib.suppress(OSError):
+                        os.remove(tmp_src)
             except Exception as e:
                 print("Auto-backup failed:", e)
 
