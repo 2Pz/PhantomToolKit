@@ -39,7 +39,7 @@ def _cheat_loop():
                             apply_bit_flag_loop(base_flags + 0x19B, native_cheats[cheat_name])
 
             dbg = None
-            with contextlib.suppress(Exception):
+            with contextlib.suppress(BaseException):
                 dbg = fspy.PyWorldChrManDbgFlags.get_instance()
 
             if dbg and not getattr(dbg, "is_null", True):
@@ -52,7 +52,7 @@ def _cheat_loop():
                     dbg.all_no_arrow_consume = True
                 elif not _active_cheats.get("noArrow") and dbg.all_no_arrow_consume:
                     dbg.all_no_arrow_consume = False
-        except Exception:
+        except BaseException:
             pass
         time.sleep(1)
 
@@ -128,7 +128,7 @@ def toggle_cheat(cheat_name: str, enabled: bool):
 
         # Fallbacks to DbgFlags for remaining like noArrow, noGoods
         dbg = None
-        with contextlib.suppress(Exception):
+        with contextlib.suppress(BaseException):
             dbg = fspy.PyWorldChrManDbgFlags.get_instance()
 
         if dbg is None or getattr(dbg, "is_null", True):
@@ -143,5 +143,5 @@ def toggle_cheat(cheat_name: str, enabled: bool):
             return {"success": True}
         else:
             return {"success": False, "message": "sys_unknown_cheat"}
-    except Exception as e:
+    except BaseException as e:
         return {"success": False, "message": str(e)}

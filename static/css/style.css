@@ -9,6 +9,7 @@ body {
     }
     h1, h2, h3, .fantasy-font { font-family: 'Cinzel', serif; }
     .inter-font { font-family: 'Inter', sans-serif; }
+    .hidden { display: none !important; }
     .textured-bg {
       background-color: #0c0c0c;
       background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0c0c0c 100%);

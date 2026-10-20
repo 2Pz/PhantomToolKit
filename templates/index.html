@@ -5,13 +5,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=1920" />
   <title>Phantom Toolkit Mod</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="{{ url_for('static', filename='js/tailwind.min.js') }}"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@400;600&family=Cairo:wght@400;600;700;900&family=Noto+Sans+Arabic:wght@400;600;700;900&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=6">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=7">
   <script>
     window.onerror = function (msg, url, line, col, error) {
       try {
